@@ -12,7 +12,10 @@ from sklearn.metrics import (
     accuracy_score,
     classification_report,
     f1_score,
+    mean_absolute_error,
+    mean_squared_error,
     precision_score,
+    r2_score,
     recall_score,
     roc_auc_score,
 )
@@ -77,6 +80,20 @@ def build_classification_report_text(
         labels=list(labels) if labels is not None else None,
         zero_division=0,
     )
+
+
+def compute_regression_metrics(
+    y_true: Sequence[float],
+    y_pred: Sequence[float],
+) -> dict[str, float]:
+    """Compute the main regression metrics for fidelity prediction."""
+
+    rmse = float(mean_squared_error(y_true, y_pred) ** 0.5)
+    return {
+        "mae": float(mean_absolute_error(y_true, y_pred)),
+        "rmse": rmse,
+        "r2": float(r2_score(y_true, y_pred)),
+    }
 
 
 def save_json_report(payload: Mapping[str, Any], destination: str | Path) -> None:

@@ -34,6 +34,7 @@ def ensure_project_directories(config: ProjectConfig) -> None:
         config.data.validation_report_path.parent,
         config.features.baseline_feature_path.parent,
         config.features.topology_feature_path.parent,
+        config.features.enhanced_feature_path.parent,
         config.features.feature_report_path.parent,
     ]
 

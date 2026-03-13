@@ -49,6 +49,7 @@ data:
 features:
   baseline_feature_path: data/processed/rf_baseline_raw_features.parquet
   topology_feature_path: data/processed/rf_baseline_topology_aware_features.parquet
+  enhanced_feature_path: data/processed/rf_enhanced_topology_features.parquet
   feature_report_path: data/processed/rf_feature_report.json
   gate_delimiters: [",", ";", "|", "->"]
   two_qubit_gates: ["cx", "cz", "swap"]
@@ -69,7 +70,7 @@ training:
     - logistic_regression
     - random_forest
     - xgboost
-  feature_set_name: topology_aware
+  feature_set_name: baseline_raw
   validation_size: 0.15
   test_size: 0.05
   random_state: 42

@@ -9,6 +9,8 @@ This repository turns a raw Kaggle dataset of simulated NISQ circuit fault logs 
 - cleaned interim datasets
 - reproducible feature tables
 - a comparable suite of baseline classifiers
+- fidelity regression baselines
+- qubit-count-stratified benchmark tables
 - evaluation artifacts for thesis chapters, papers, and figures
 
 The current focus is not model complexity. It is building a clean, auditable baseline that you can explain confidently in a thesis.
@@ -79,6 +81,12 @@ The training pipeline:
 6. trains `DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, and `XGBoost`
 7. saves validation and test metrics separately for each model
 8. saves a `model_comparison.csv` summary and a `split_summary.json` at the run root
+
+The repository also supports:
+
+- fidelity regression with `DummyRegressor`, `RandomForestRegressor`, and `XGBoostRegressor`
+- qubit-count-stratified classification comparisons
+- lightweight validation-driven tuning for Random Forest and XGBoost
 
 ## Setup
 
@@ -168,6 +176,9 @@ make prepare-data
 make build-features
 make train-model-suite
 make train-rf-baseline
+make train-fidelity-regression
+make train-qubit-stratified
+make tune-classifiers
 ```
 
 ## How This Repo Connects To Other Repos In The Org

@@ -152,3 +152,56 @@ def engineer_gate_sequence_features(
         )
 
     return pd.DataFrame.from_records(feature_rows, index=frame.index)
+
+
+def engineer_enhanced_classification_features(
+    frame: pd.DataFrame,
+    topology_feature_frame: pd.DataFrame,
+    qubit_count_column: str = "qubit_count",
+) -> pd.DataFrame:
+    """Build a small set of normalized features for harder classification runs.
+
+    These features are intentionally simple. They try to express relationships
+    that may matter more than raw magnitudes alone:
+    - circuit depth relative to qubit count
+    - interaction between gate depth and gate error rate
+    - relative scale of readout noise vs gate noise
+    - coherence margins from T1/T2 values
+    - observed-output mismatch normalized by depth
+    """
+
+    enhanced_feature_rows: list[dict[str, float]] = []
+    for row_index, row in frame.iterrows():
+        qubit_count_value = row.get(qubit_count_column)
+        qubit_count = (
+            float(qubit_count_value)
+            if qubit_count_value is not None and not pd.isna(qubit_count_value)
+            else 0.0
+        )
+        gate_depth_value = row.get("gate_depth")
+        gate_depth = float(gate_depth_value) if pd.notna(gate_depth_value) else 0.0
+        error_rate_gate_value = row.get("error_rate_gate")
+        error_rate_gate = float(error_rate_gate_value) if pd.notna(error_rate_gate_value) else 0.0
+        readout_error_value = row.get("readout_error")
+        readout_error = float(readout_error_value) if pd.notna(readout_error_value) else 0.0
+        t1_time_value = row.get("t1_time")
+        t1_time = float(t1_time_value) if pd.notna(t1_time_value) else 0.0
+        t2_time_value = row.get("t2_time")
+        t2_time = float(t2_time_value) if pd.notna(t2_time_value) else 0.0
+        fidelity_value = row.get("fidelity")
+        fidelity = float(fidelity_value) if pd.notna(fidelity_value) else 0.0
+        bit_errors = float(topology_feature_frame.loc[row_index, "bit_errors"])
+
+        enhanced_feature_rows.append(
+            {
+                "depth_per_qubit": safe_divide(gate_depth, qubit_count),
+                "error_depth_load": float(error_rate_gate * gate_depth),
+                "readout_to_gate_error_ratio": safe_divide(readout_error, error_rate_gate),
+                "coherence_gap": float(t1_time - t2_time),
+                "coherence_min": float(min(t1_time, t2_time)),
+                "fidelity_loss": float(max(0.0, 1.0 - fidelity)),
+                "bit_error_density": safe_divide(bit_errors, gate_depth),
+            }
+        )
+
+    return pd.DataFrame.from_records(enhanced_feature_rows, index=frame.index)

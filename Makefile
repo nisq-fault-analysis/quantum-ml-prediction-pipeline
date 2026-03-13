@@ -1,6 +1,9 @@
 PYTHON ?= .venv\Scripts\python.exe
 CONFIG ?= experiments/configs/baseline.yaml
 SUITE_CONFIG ?= experiments/configs/model_suite.yaml
+REGRESSION_CONFIG ?= experiments/configs/fidelity_regression.yaml
+STRATIFIED_CONFIG ?= experiments/configs/qubit_stratified.yaml
+TUNING_CONFIG ?= experiments/configs/tuned_classification.yaml
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
@@ -32,3 +35,12 @@ train-rf-baseline:
 
 train-model-suite:
 	$(PYTHON) -m src.models.train_model_suite --config $(SUITE_CONFIG)
+
+train-fidelity-regression:
+	$(PYTHON) -m src.models.train_fidelity_regression --config $(REGRESSION_CONFIG)
+
+train-qubit-stratified:
+	$(PYTHON) -m src.models.train_qubit_stratified_suite --config $(STRATIFIED_CONFIG)
+
+tune-classifiers:
+	$(PYTHON) -m src.models.tune_classifiers --config $(TUNING_CONFIG)

@@ -4,6 +4,9 @@ This repository currently stores experiment runs under:
 
 - `experiments/rf_baseline/`
 - `experiments/model_benchmark/`
+- `experiments/fidelity_regression/`
+- `experiments/qubit_stratified/`
+- `experiments/tuned_classification/`
 
 Single-model Random Forest runs follow this structure:
 
@@ -72,3 +75,6 @@ Why this layout matters:
 `experiments/configs/` stores planned experiments.
 `experiments/rf_baseline/` stores the original single-model baseline runs.
 `experiments/model_benchmark/` stores fair, same-split model comparisons.
+`experiments/fidelity_regression/` stores regression runs that predict fidelity.
+`experiments/qubit_stratified/` stores per-qubit-count classification summaries.
+`experiments/tuned_classification/` stores validation-driven tuning results.

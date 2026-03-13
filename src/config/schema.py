@@ -90,6 +90,7 @@ class FeatureConfig(BaseModel):
 
     baseline_feature_path: Path = Path("data/processed/rf_baseline_raw_features.parquet")
     topology_feature_path: Path = Path("data/processed/rf_baseline_topology_aware_features.parquet")
+    enhanced_feature_path: Path = Path("data/processed/rf_enhanced_topology_features.parquet")
     feature_report_path: Path = Path("data/processed/rf_feature_report.json")
     gate_delimiters: list[str] = Field(default_factory=lambda: [",", ";", "|", "->"])
     two_qubit_gates: list[str] = Field(default_factory=lambda: ["cx", "cz", "swap"])
@@ -112,7 +113,9 @@ class TrainingConfig(BaseModel):
     """Training options for the thesis baseline model suite."""
 
     model_names: list[ModelName] = Field(default_factory=default_model_names)
-    feature_set_name: Literal["baseline_raw", "topology_aware"] = "topology_aware"
+    feature_set_name: Literal["baseline_raw", "topology_aware", "enhanced_topology"] = (
+        "topology_aware"
+    )
     validation_size: float = Field(default=0.15, gt=0.0, lt=0.5)
     test_size: float = Field(default=0.05, gt=0.0, lt=0.5)
     random_state: int = 42

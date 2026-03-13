@@ -106,3 +106,25 @@ def plot_feature_importance(
     figure.tight_layout()
 
     _save_figure(figure, output_path)
+
+
+def plot_actual_vs_predicted(
+    y_true: Sequence[float],
+    y_pred: Sequence[float],
+    output_path: str | Path,
+    *,
+    title: str,
+) -> None:
+    """Plot regression predictions against the ground truth."""
+
+    figure, axis = plt.subplots(figsize=(8, 6))
+    axis.scatter(y_true, y_pred, alpha=0.35, color="#2a6f97", edgecolors="none")
+    lower_bound = min(min(y_true), min(y_pred))
+    upper_bound = max(max(y_true), max(y_pred))
+    axis.plot([lower_bound, upper_bound], [lower_bound, upper_bound], color="#c1121f")
+    axis.set_title(title)
+    axis.set_xlabel("Actual value")
+    axis.set_ylabel("Predicted value")
+    figure.tight_layout()
+
+    _save_figure(figure, output_path)

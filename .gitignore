@@ -41,6 +41,12 @@ experiments/rf_baseline/*
 !experiments/rf_baseline/.gitkeep
 experiments/model_benchmark/*
 !experiments/model_benchmark/.gitkeep
+experiments/fidelity_regression/*
+!experiments/fidelity_regression/.gitkeep
+experiments/qubit_stratified/*
+!experiments/qubit_stratified/.gitkeep
+experiments/tuned_classification/*
+!experiments/tuned_classification/.gitkeep
 *.pkl
 *.joblib
 

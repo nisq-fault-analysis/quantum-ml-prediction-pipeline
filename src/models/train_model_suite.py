@@ -26,11 +26,12 @@ from src.visualization.plots import plot_confusion_matrix, plot_feature_importan
 
 def _select_feature_path(config_path: str | Path) -> tuple[Path, ProjectConfig]:
     config = load_config(config_path)
-    feature_path = (
-        config.features.baseline_feature_path
-        if config.training.feature_set_name == "baseline_raw"
-        else config.features.topology_feature_path
-    )
+    feature_paths = {
+        "baseline_raw": config.features.baseline_feature_path,
+        "topology_aware": config.features.topology_feature_path,
+        "enhanced_topology": config.features.enhanced_feature_path,
+    }
+    feature_path = feature_paths[config.training.feature_set_name]
     return feature_path, config
 
 

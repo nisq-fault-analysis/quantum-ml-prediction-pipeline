@@ -1,9 +1,8 @@
-# Random Forest baseline configuration for the diploma thesis repository.
+# Fidelity regression benchmark configuration.
 #
-# The current public Kaggle CSV appears to contain a fixed gate sequence
-# ("H,CX,RX") for all rows. The feature pipeline still computes gate-derived
-# features because that logic belongs in the methodology and may matter for
-# richer datasets later.
+# This experiment predicts continuous fidelity rather than discrete error type.
+# The regression pipeline drops `fidelity` from the inputs automatically and
+# also removes outcome-derived leakage columns such as `fidelity_loss`.
 
 data:
   dataset_path: data/raw/NISQ-FaultLogs-100K.csv
@@ -67,12 +66,16 @@ features:
   categorical_feature_columns: ["device_type"]
 
 training:
-  model_names: [random_forest]
-  feature_set_name: baseline_raw
+  model_names:
+    - dummy_most_frequent
+    - logistic_regression
+    - random_forest
+    - xgboost
+  feature_set_name: enhanced_topology
   validation_size: 0.15
   test_size: 0.05
   random_state: 42
-  stratify_by_label: true
+  stratify_by_label: false
   dummy_strategy: most_frequent
   logistic_c: 1.0
   logistic_max_iter: 1000
@@ -91,6 +94,6 @@ training:
   compute_roc_auc: false
 
 output:
-  experiment_root: experiments/rf_baseline
+  experiment_root: experiments/fidelity_regression
   run_name:
-  figures_dir: reports/figures/rf_baseline
+  figures_dir: reports/figures/fidelity_regression

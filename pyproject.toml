@@ -39,8 +39,11 @@ notebook = [
 qfc-build-features = "src.features.build_features:main"
 qfc-eda = "src.data.run_eda:main"
 qfc-prepare-data = "src.data.prepare_data:main"
+qfc-train-fidelity-regression = "src.models.train_fidelity_regression:main"
 qfc-train-model-suite = "src.models.train_model_suite:main"
+qfc-train-qubit-stratified = "src.models.train_qubit_stratified_suite:main"
 qfc-train-rf-baseline = "src.models.train_rf_baseline:main"
+qfc-tune-classifiers = "src.models.tune_classifiers:main"
 
 [tool.setuptools.package-dir]
 "" = "."

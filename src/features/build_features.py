@@ -11,7 +11,10 @@ from src.config.io import ensure_project_directories, load_config
 from src.config.schema import ProjectConfig
 from src.data.dataset import read_tabular_file, validate_required_columns
 from src.evaluation.metrics import save_json_report
-from src.features.gate_sequence import engineer_gate_sequence_features
+from src.features.gate_sequence import (
+    engineer_enhanced_classification_features,
+    engineer_gate_sequence_features,
+)
 
 
 def build_feature_sets(
@@ -53,10 +56,20 @@ def build_feature_sets(
         [baseline_feature_set, topology_feature_frame],
         axis=1,
     )
+    enhanced_feature_frame = engineer_enhanced_classification_features(
+        frame=cleaned_frame,
+        topology_feature_frame=topology_feature_frame,
+        qubit_count_column=config.data.qubit_count_column,
+    )
+    enhanced_feature_set = pd.concat(
+        [topology_feature_set, enhanced_feature_frame],
+        axis=1,
+    )
 
     return {
         "baseline_raw": baseline_feature_set,
         "topology_aware": topology_feature_set,
+        "enhanced_topology": enhanced_feature_set,
     }
 
 
@@ -71,6 +84,7 @@ def run_build_features(config_path: str | Path) -> None:
 
     feature_sets["baseline_raw"].to_parquet(config.features.baseline_feature_path, index=False)
     feature_sets["topology_aware"].to_parquet(config.features.topology_feature_path, index=False)
+    feature_sets["enhanced_topology"].to_parquet(config.features.enhanced_feature_path, index=False)
 
     feature_report = {}
     for feature_set_name, feature_frame in feature_sets.items():
@@ -94,6 +108,7 @@ def run_build_features(config_path: str | Path) -> None:
     save_json_report(feature_report, config.features.feature_report_path)
     print(f"Baseline feature set saved to: {config.features.baseline_feature_path}")
     print(f"Topology-aware feature set saved to: {config.features.topology_feature_path}")
+    print(f"Enhanced topology feature set saved to: {config.features.enhanced_feature_path}")
     print(f"Feature report saved to: {config.features.feature_report_path}")
 
 
