@@ -1,7 +1,8 @@
-"""YAML configuration loading utilities."""
+"""YAML configuration and path helpers."""
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -20,13 +21,20 @@ def load_config(config_path: str | Path) -> ProjectConfig:
 
 
 def ensure_project_directories(config: ProjectConfig) -> None:
-    """Create the core output directories used by the research workflow."""
+    """Create the core directories used by the research workflow."""
 
     required_directories = [
+        Path("data/raw"),
         Path("data/interim"),
         Path("data/processed"),
-        config.output.output_dir,
+        config.output.experiment_root,
         config.output.figures_dir,
+        config.data.cleaned_dataset_path.parent,
+        config.data.invalid_rows_path.parent,
+        config.data.validation_report_path.parent,
+        config.features.baseline_feature_path.parent,
+        config.features.topology_feature_path.parent,
+        config.features.feature_report_path.parent,
     ]
 
     for directory in required_directories:
@@ -41,3 +49,15 @@ def save_resolved_config(config: ProjectConfig, destination: str | Path) -> None
 
     with output_path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(config.model_dump(mode="json"), handle, sort_keys=False)
+
+
+def build_run_directory(config: ProjectConfig) -> Path:
+    """Build a timestamped experiment folder unless the config pins a run name."""
+
+    run_name = config.output.run_name
+    if not run_name:
+        run_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    run_directory = config.output.experiment_root / run_name
+    run_directory.mkdir(parents=True, exist_ok=True)
+    return run_directory

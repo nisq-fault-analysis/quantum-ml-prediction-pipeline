@@ -2,85 +2,114 @@
 
 ## Goal
 
-This repository is built to answer a research question, not to ship a user-facing application. That changes the design priorities.
+This repository is built as a research workflow, not a production application.
 
-The priorities here are:
+That means the design priorities are:
 
 1. reproducibility
 2. readability
-3. easy experiment iteration
-4. clear mapping from code to thesis methodology
+3. easy iteration on experiments
+4. clear mapping from code to thesis chapters
 
-## The Core Idea
+## Core Pipeline
 
-The repository follows a simple pipeline:
+The current baseline architecture is:
 
-`raw dataset -> typed config -> feature engineering -> model training -> evaluation -> figures/results`
+`raw Kaggle CSV -> cleaned interim dataset -> processed feature tables -> Random Forest experiment artifacts`
 
-Each step has a dedicated place in the folder structure so that you can explain the workflow without mixing concerns.
+The code is split by responsibility so each step can be inspected and explained independently.
 
-## Why The Code Is Split By Responsibility
+## Why The Repository Is Split This Way
 
 ### `src/config`
 
-This is where experiment choices live. Instead of hardcoding paths and column names in many scripts, we keep them in YAML and validate them with Pydantic. That makes experiments easier to rerun and easier to describe in the methodology chapter.
+This package holds typed YAML config models.
+
+Why it matters:
+
+- experiments are reproducible
+- paths and parameters live in one place
+- the methodology chapter can refer to a concrete configuration file
 
 ### `src/data`
 
-This layer reads the dataset and performs light checks. Its job is to answer:
+This package owns:
 
-- where is the dataset?
-- what file format is it?
-- do the expected columns actually exist?
+- loading the raw CSV
+- validating required columns
+- coercing types
+- aligning bitstrings
+- writing cleaned interim data
 
-This keeps I/O logic separate from model logic.
+Why it matters:
+
+- raw data handling becomes explicit instead of notebook-only
+- invalid rows are logged rather than disappearing silently
 
 ### `src/features`
 
-This layer turns raw circuit/gate-sequence strings into numeric features. The starter version uses transparent count-based features because they are easy to validate and easy to explain in a thesis. Later you can extend it with domain-specific features such as depth or entanglement structure.
+This package builds saved feature tables.
+
+Why it matters:
+
+- feature logic is reusable
+- you can compare raw vs engineered feature sets cleanly
+- the feature-engineering chapter has a concrete implementation to reference
 
 ### `src/models`
 
-This layer owns train/test splitting, model fitting, and experiment output saving. It is kept separate so you can swap model families without rewriting data loading or plotting code.
+This package trains the first Random Forest baseline and saves artifacts.
+
+Why it matters:
+
+- the first benchmark is reproducible
+- the run folder contains both metrics and the exact config used
 
 ### `src/evaluation`
 
-This layer converts predictions into metrics and table-friendly reports. In a thesis project, this matters because you will likely reuse the same evaluation tables across many experiment variants.
+This package computes metrics and report text.
+
+Why it matters:
+
+- all experiments use a consistent evaluation procedure
+- thesis tables are easier to keep comparable
 
 ### `src/visualization`
 
-This layer produces reusable figures. Keeping plotting code in one place avoids notebook-only logic that becomes hard to reproduce later.
+This package saves confusion matrices and feature-importance plots.
 
-## Why There Is Both `notebooks/` And `src/`
+Why it matters:
 
-This is a common beginner question.
+- figures become scriptable rather than manual notebook screenshots
 
-- `notebooks/` is for exploration, quick hypotheses, and visual inspection
-- `src/` is for reusable logic that should survive beyond one notebook session
+## Data Stages
 
-A healthy pattern is:
+The repository intentionally separates data into three stages:
 
-1. explore an idea in a notebook
-2. once the idea stabilizes, move the logic into `src/`
-3. keep the notebook as a thin consumer of reusable code
+- `data/raw`: source data only
+- `data/interim`: cleaned, validated, but still close to the source
+- `data/processed`: model-ready feature tables
 
-## Why We Save Outputs Under `experiments/runs/`
+This separation makes it easier to answer a common thesis question:
 
-Research projects produce many artifacts:
+“Which preprocessing decisions happened before modelling?”
+
+## Experiment Outputs
+
+The current baseline writes to:
+
+- `experiments/rf_baseline/<run_name>/`
+
+Each run folder stores:
 
 - metrics
-- confusion matrices
-- predictions
-- SHAP plots
-- feature tables
+- classification report
+- confusion matrix
+- feature importance plot
+- serialized model
+- resolved config
 
-If those files are not organized, it becomes very hard to answer simple questions like:
-
-- Which config produced this figure?
-- Which model won on 8-qubit circuits?
-- Can I reproduce the table in Chapter 6?
-
-That is why each experiment gets a named output folder with a resolved config file beside it.
+That is the minimal structure needed for a research-grade baseline.
 
 ## Beginner Mental Model
 
@@ -92,31 +121,18 @@ You can think of the repository as three layers:
 
 Inputs:
 
-- raw data
-- config files
+- raw CSV
+- experiment config
 
 Transformations:
 
-- loading
-- feature engineering
+- cleaning
+- feature building
 - model training
-- evaluation
 
 Evidence:
 
 - metrics
-- reports
-- figures
-- saved predictions
-
-## What To Extend Later
-
-Once the baseline is stable, good next extensions are:
-
-- cross-validation
-- hyperparameter search
-- richer sequence features
-- ablation studies
-- calibration analysis
-- error analysis notebooks
-- figure scripts dedicated to final thesis visuals
+- plots
+- saved model
+- run config

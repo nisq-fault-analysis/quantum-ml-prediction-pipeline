@@ -2,141 +2,193 @@
 
 Research repository for a diploma thesis on machine-learning-based classification of NISQ circuit fault types.
 
-## Purpose
+## Project Purpose
 
-This repository is the analysis and modelling home for the project. It is designed to support:
+This repository turns a raw Kaggle dataset of simulated NISQ circuit fault logs into:
 
-- exploratory data analysis on the Kaggle NISQ fault dataset
-- feature engineering from circuit gate sequences
-- training and comparing classical ML baselines
-- SHAP-based interpretability
-- stratified modelling by qubit count
-- generating reproducible figures and experiment outputs for thesis chapters and papers
+- cleaned interim datasets
+- reproducible feature tables
+- a comparable suite of baseline classifiers
+- evaluation artifacts for thesis chapters, papers, and figures
 
-The code is deliberately structured as a research workflow rather than a product application. That means reproducibility, clarity, and clean experiment logging matter more than building a large framework.
+The current focus is not model complexity. It is building a clean, auditable baseline that you can explain confidently in a thesis.
 
 ## Thesis Context
 
-The thesis problem is to classify fault types in noisy intermediate-scale quantum (NISQ) circuits using classical machine learning. In practice, that means we want to:
+The thesis studies whether classical machine-learning models can classify fault types in noisy intermediate-scale quantum circuits from simulation-derived fault logs.
 
-1. understand the dataset and its biases
-2. convert circuit/gate-sequence information into usable tabular features
-3. compare multiple baseline models under the same split strategy
-4. study how performance changes across qubit-count strata
-5. interpret model behaviour with SHAP and convert results into figures/tables for writing
+This repository currently implements the first full baseline workflow:
 
-This repository is intended to be the reproducible bridge between raw data and thesis-ready evidence.
+`raw Kaggle CSV -> validation/cleaning -> feature engineering -> baseline models -> metrics and plots`
+
+That baseline is intentionally simple and transparent so it can support:
+
+- Chapter 2 background/problem framing
+- Chapter 3 dataset and preprocessing methodology
+- Chapter 4 feature engineering and first modelling decisions
 
 ## Repository Structure
 
 ```text
 quantum-fault-classifier/
 |-- data/
-|   |-- raw/              # Original dataset files, never edited in place
-|   |-- interim/          # Intermediate artifacts such as engineered feature tables
-|   `-- processed/        # Cleaned datasets ready for stable downstream use
-|-- notebooks/           # Exploratory notebooks and quick visual inspection
+|   |-- raw/                  # Original Kaggle CSV, never edited in place
+|   |-- interim/              # Cleaned dataset plus validation logs
+|   `-- processed/            # Saved feature tables ready for modelling
+|-- notebooks/               # Exploration and quick inspection
 |-- src/
-|   |-- config/          # Typed experiment configuration models and YAML loading
-|   |-- data/            # Dataset loading and EDA entry points
-|   |-- features/        # Feature engineering from gate sequences
-|   |-- models/          # Baseline training pipeline
-|   |-- evaluation/      # Metrics and report helpers
-|   `-- visualization/   # Plotting utilities for EDA and experiments
+|   |-- config/              # Typed YAML config models
+|   |-- data/                # Reading, validation, and cleaning
+|   |-- features/            # Feature engineering from gate strings and bitstrings
+|   |-- models/              # Baseline model training and comparison pipeline
+|   |-- evaluation/          # Metrics/report helpers
+|   `-- visualization/       # Confusion matrix and feature-importance plots
 |-- experiments/
-|   |-- configs/         # YAML experiment definitions
-|   `-- runs/            # Saved outputs from executed experiments
+|   |-- configs/             # Experiment YAML files
+|   |-- rf_baseline/         # Timestamped Random Forest run artifacts
+|   `-- model_benchmark/     # Timestamped multi-model comparison runs
 |-- reports/
-|   `-- figures/         # Figures reused in thesis chapters or papers
-|-- tests/               # Small, fast tests for core logic
-`-- docs/                # Architecture notes and thesis mapping
+|   `-- figures/             # Figures selected for thesis chapters
+|-- docs/                    # Architecture, data flow, and thesis mapping
+`-- tests/                   # Focused tests for validation and features
 ```
+
+## Raw Data, Interim Data, Processed Data
+
+This repository uses three data stages on purpose:
+
+- `data/raw/`: untouched source data from Kaggle
+- `data/interim/`: cleaned and validated rows, plus logs about invalid rows
+- `data/processed/`: feature tables used directly for modelling
+
+This separation matters for thesis work because it keeps preprocessing decisions explicit and reproducible.
+
+## Current Baseline Models
+
+The repository now supports a small benchmark suite trained to predict:
+
+- target: `error_type`
+
+The training pipeline:
+
+1. loads one of the saved feature tables
+2. performs one reproducible `train/validation/test` split shared by all compared models
+3. uses the current thesis-friendly convention of `80/15/5`
+4. stratifies by target class when statistically feasible
+5. one-hot encodes only categorical inputs that actually need encoding
+6. trains `DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, and `XGBoost`
+7. saves validation and test metrics separately for each model
+8. saves a `model_comparison.csv` summary and a `split_summary.json` at the run root
 
 ## Setup
 
-### 1. Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-On PowerShell:
+### 1. Create and activate a virtual environment
 
 ```powershell
+python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
 ### 2. Install the project
 
-```bash
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+```powershell
+.venv\Scripts\python.exe -m pip install --upgrade pip
+.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
-### 3. Add the dataset
+Optional notebook support:
 
-Download the Kaggle dataset manually and place it under `data/raw/`.
+```powershell
+.venv\Scripts\python.exe -m pip install -e ".[notebook]"
+```
 
-Then update `experiments/configs/baseline.yaml`:
+### 3. Confirm the raw dataset exists
 
-- `data.dataset_path`
-- `data.label_column`
-- `data.gate_sequence_column`
-- `data.qubit_count_column`
+Expected file:
 
-These names are left as placeholders on purpose because we should not guess the real schema.
+- [data/raw/NISQ-FaultLogs-100K.csv](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/data/raw/NISQ-FaultLogs-100K.csv)
 
 ## Typical Workflow
 
-### Option A: via `make`
+### Step 1: Prepare raw data
+
+```powershell
+.venv\Scripts\python.exe -m src.data.prepare_data --config experiments/configs/baseline.yaml
+```
+
+Outputs:
+
+- cleaned interim dataset
+- validation report JSON
+- invalid-row CSV if any rows fail checks
+
+### Step 2: Build feature tables
+
+```powershell
+.venv\Scripts\python.exe -m src.features.build_features --config experiments/configs/baseline.yaml
+```
+
+Outputs:
+
+- baseline/raw feature set
+- topology-aware feature set
+- feature report showing zero-variance columns
+
+### Step 3: Train the multi-model benchmark suite
+
+```powershell
+.venv\Scripts\python.exe -m src.models.train_model_suite --config experiments/configs/model_suite.yaml
+```
+
+Outputs:
+
+- one subfolder per model
+- `model_comparison.csv`
+- `split_summary.json`
+- per-model `metrics.json`
+- per-model validation/test classification reports
+- per-model validation/test confusion matrices
+- per-model `model.joblib`
+- per-model importance artifacts when supported
+- `run_config.yaml`
+
+The original single-model Random Forest command still exists when you want to rerun only that reference model:
+
+```powershell
+.venv\Scripts\python.exe -m src.models.train_rf_baseline --config experiments/configs/baseline.yaml
+```
+
+## Makefile Shortcuts
+
+If you have `make` available:
 
 ```bash
 make setup
-make run-eda
-make train-baseline
+make prepare-data
+make build-features
+make train-model-suite
+make train-rf-baseline
 ```
-
-### Option B: direct Python commands
-
-```bash
-python -m src.data.run_eda --config experiments/configs/baseline.yaml
-python -m src.models.train_baseline --config experiments/configs/baseline.yaml
-```
-
-Recommended working rhythm:
-
-1. edit the experiment YAML
-2. run EDA to inspect class balance, qubit distribution, and sequence lengths
-3. run the baseline training pipeline
-4. inspect `experiments/runs/` for metrics, reports, predictions, and SHAP outputs
-5. move the final figures you want to cite into `reports/figures/`
-6. document observations in thesis notes as you go
 
 ## How This Repo Connects To Other Repos In The Org
 
-This repository is meant to sit in the middle of a larger research workflow.
+This repository is the analysis and modelling layer in a broader research stack.
 
-- Upstream repos: circuit generation, simulation, hardware execution, or dataset collection
-- This repo: feature engineering, classical ML experiments, interpretability, and figure generation
-- Downstream repos: thesis/manuscript writing, presentation material, or publication packaging
+- Upstream repos: circuit generation, simulation, or dataset collection
+- This repo: cleaning, feature engineering, baseline ML, evaluation, and figure generation
+- Downstream repos: thesis writing, paper drafting, presentations
 
-TODO: Replace the generic descriptions above with the actual repository names used in your organization.
+TODO: Replace the generic repo-role descriptions above with the actual repository names used in your organization.
 
-A useful mental model is:
+## Beginner Notes
 
-`raw quantum experiment data -> this repository -> thesis figures/tables/manuscript`
+- `circuit_id` is kept for traceability, not used as a model feature.
+- `timestamp` is preserved in the cleaned data but currently excluded from the baseline model because it may encode simulation order rather than a scientifically meaningful signal.
+- The public Kaggle file appears to use the same `gate_types` string in every row, so some engineered gate features may have zero variance. That is okay for the baseline; the feature report makes that visible instead of hiding it.
 
-## First Files To Read
+## Key Docs
 
-- `experiments/configs/baseline.yaml`
-- `src/data/dataset.py`
-- `src/features/gate_sequence.py`
-- `src/models/train_baseline.py`
-- `docs/architecture.md`
-- `docs/thesis-chapter-mapping.md`
-
-## Notes
-
-- No real data is included in the repository scaffold.
-- Paths are placeholders until you insert the Kaggle dataset.
-- The starter baseline is intentionally simple and transparent, so you can explain it easily in a thesis before adding more advanced models.
+- [docs/architecture.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/architecture.md)
+- [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/data-flow.md)
+- [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/baseline-model.md)
+- [docs/thesis-chapter-mapping.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/thesis-chapter-mapping.md)

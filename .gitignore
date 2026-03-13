@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.egg-info/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
@@ -36,6 +37,10 @@ data/processed/*
 # Experiment outputs and model binaries
 experiments/runs/*
 !experiments/runs/.gitkeep
+experiments/rf_baseline/*
+!experiments/rf_baseline/.gitkeep
+experiments/model_benchmark/*
+!experiments/model_benchmark/.gitkeep
 *.pkl
 *.joblib
 

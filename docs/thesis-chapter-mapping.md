@@ -1,98 +1,61 @@
 # Thesis Chapter Mapping
 
-This document maps repository components to likely thesis chapters so the codebase and written thesis reinforce each other.
+This document connects the codebase to the written thesis so implementation and writing stay aligned.
 
-## Chapter 2: Background And Problem Framing
+## Chapter 2: Background And Problem Definition
 
-Relevant repository parts:
+Relevant files:
 
-- `README.md`
-- `docs/architecture.md`
-- `notebooks/01_eda_starter.ipynb`
+- [README.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/README.md)
+- [docs/architecture.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/architecture.md)
+- [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/baseline-model.md)
 
-How it helps:
+How they help:
 
-- frames the NISQ fault classification problem
-- explains why classical ML is a useful baseline
-- provides early dataset inspection material for motivating the task
+- frame the research problem
+- justify why a classical baseline is useful
+- explain why Random Forest is a reasonable first benchmark
+- explain why multiple baselines are needed for a fair comparison
 
-## Chapter 3: Dataset And Research Setup
+## Chapter 3: Dataset And Preprocessing
 
-Relevant repository parts:
+Relevant files:
 
-- `data/raw/`
-- `src/data/dataset.py`
-- `experiments/configs/baseline.yaml`
+- [experiments/configs/baseline.yaml](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/experiments/configs/baseline.yaml)
+- [experiments/configs/model_suite.yaml](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/experiments/configs/model_suite.yaml)
+- [src/data/dataset.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/data/dataset.py)
+- [src/data/prepare.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/data/prepare.py)
+- [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/data-flow.md)
 
-How it helps:
+How they help:
 
-- documents where the dataset comes from
-- captures the schema assumptions
-- provides reproducible loading and validation logic
+- define the raw schema
+- document cleaning assumptions
+- log invalid rows and missing values
+- separate raw, interim, and processed data
 
-## Chapter 4: Feature Engineering
+## Chapter 4: Feature Engineering And Baseline Modelling
 
-Relevant repository parts:
+Relevant files:
 
-- `src/features/gate_sequence.py`
-- `tests/test_feature_engineering.py`
+- [src/features/gate_sequence.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/features/gate_sequence.py)
+- [src/features/build_features.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/features/build_features.py)
+- [src/models/random_forest.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/random_forest.py)
+- [src/models/model_suite.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/model_suite.py)
+- [src/models/train_model_suite.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/train_model_suite.py)
+- [src/models/train_rf_baseline.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/train_rf_baseline.py)
 
-How it helps:
+How they help:
 
-- formalizes how gate sequences become numeric features
-- supports discussion of simple interpretable representations before advanced models
+- implement the first feature sets
+- build the Random Forest baseline
+- compare Dummy, Logistic Regression, Random Forest, and XGBoost fairly
+- define the reproducible train/test workflow
 
-## Chapter 5: Modelling Methodology
+## Later Chapters
 
-Relevant repository parts:
+This repository also prepares material for later chapters:
 
-- `src/models/baseline.py`
-- `src/models/train_baseline.py`
-- `experiments/configs/`
-
-How it helps:
-
-- defines the train/test split strategy
-- shows which baseline models are compared
-- records reproducible modelling choices in config files
-
-## Chapter 6: Evaluation And Interpretability
-
-Relevant repository parts:
-
-- `src/evaluation/metrics.py`
-- `src/visualization/plots.py`
-- SHAP outputs under `experiments/runs/`
-
-How it helps:
-
-- provides consistent metrics
-- creates confusion matrices and SHAP figures
-- supports analysis of both performance and model behaviour
-
-## Chapter 7: Results
-
-Relevant repository parts:
-
-- `experiments/runs/`
-- `reports/figures/`
-
-How it helps:
-
-- stores model comparison tables
-- stores per-group results for qubit-count strata
-- generates thesis-ready figures and evidence
-
-## Chapter 8: Discussion, Limitations, And Future Work
-
-Relevant repository parts:
-
-- `docs/architecture.md`
-- experiment configs and results history
-- TODO markers across the codebase
-
-How it helps:
-
-- highlights where assumptions are still manual
-- shows what the baseline does and does not capture
-- points naturally toward richer feature sets and stronger models
+- evaluation outputs and figures support results chapters
+- run configs and assumptions support discussion and limitations
+- saved feature tables support future model-comparison chapters

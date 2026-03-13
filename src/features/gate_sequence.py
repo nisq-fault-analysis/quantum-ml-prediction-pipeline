@@ -1,15 +1,11 @@
-"""Feature engineering from gate-sequence strings.
-
-The baseline features are intentionally transparent: counts, diversity, and gate-frequency
-signals are easy to inspect, easy to explain in a thesis, and useful as a starting point
-before moving to richer sequence models.
-"""
+"""Feature engineering from NISQ gate-type strings and measurement outcomes."""
 
 from __future__ import annotations
 
-from collections import Counter
+import math
 import re
-from typing import Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import pandas as pd
 
@@ -21,41 +17,72 @@ def _delimiter_pattern(delimiters: Sequence[str]) -> re.Pattern[str]:
     return re.compile("|".join(escaped_delimiters))
 
 
-def _sanitize_feature_name(token: str) -> str:
-    return re.sub(r"\W+", "_", token).strip("_") or "unknown_gate"
+def safe_divide(numerator: float, denominator: float) -> float:
+    """Return a safe ratio and avoid noisy division-by-zero failures."""
+
+    if denominator == 0 or math.isnan(denominator):
+        return 0.0
+    return float(numerator / denominator)
 
 
-def normalize_gate_token(token: str, lowercase: bool = True) -> str:
-    """Normalize tokens so the same gate is counted consistently."""
+def normalize_gate_token(token: str) -> str:
+    """Normalize gate names to a consistent lowercase representation."""
 
-    cleaned = token.strip()
-    if lowercase:
-        cleaned = cleaned.lower()
-
-    return cleaned
+    return token.strip().lower()
 
 
-def tokenize_gate_sequence(
-    sequence: object, delimiters: Sequence[str], lowercase: bool = True
-) -> list[str]:
-    """Split a gate-sequence field into normalized tokens."""
+def parse_gate_types(gate_types: object, delimiters: Sequence[str]) -> list[str]:
+    """Split a gate string such as `H,CX,RX,CX` into normalized tokens."""
 
-    if pd.isna(sequence):
+    if gate_types is None or pd.isna(gate_types):
         return []
 
-    text = str(sequence).strip()
+    text = str(gate_types).strip()
     if not text:
         return []
 
     normalized_text = _delimiter_pattern(delimiters).sub(" ", text)
+    return [normalize_gate_token(token) for token in normalized_text.split() if token.strip()]
 
-    tokens: list[str] = []
-    for token in normalized_text.split():
-        cleaned = normalize_gate_token(token, lowercase=lowercase)
-        if cleaned:
-            tokens.append(cleaned)
 
-    return tokens
+def count_specific_gate(tokens: Sequence[str], gate_name: str) -> int:
+    """Count how often a specific gate appears in the token sequence."""
+
+    normalized_gate_name = normalize_gate_token(gate_name)
+    return sum(1 for token in tokens if token == normalized_gate_name)
+
+
+def count_unique_gates(tokens: Sequence[str]) -> int:
+    """Count the number of unique gate types used in the circuit."""
+
+    return len(set(tokens))
+
+
+def compute_two_qubit_ratio(tokens: Sequence[str], two_qubit_gates: Sequence[str]) -> float:
+    """Estimate the fraction of gates that are two-qubit operations."""
+
+    normalized_two_qubit_gates = {normalize_gate_token(gate) for gate in two_qubit_gates}
+    two_qubit_count = sum(1 for token in tokens if token in normalized_two_qubit_gates)
+    return safe_divide(two_qubit_count, len(tokens))
+
+
+def compute_bit_errors(observed_bitstring: object, ideal_bitstring: object) -> int | None:
+    """Compute the Hamming distance between aligned observed and ideal bitstrings."""
+
+    if observed_bitstring is None or ideal_bitstring is None:
+        return None
+    if pd.isna(observed_bitstring) or pd.isna(ideal_bitstring):
+        return None
+
+    observed_text = str(observed_bitstring)
+    ideal_text = str(ideal_bitstring)
+    if len(observed_text) != len(ideal_text):
+        return None
+
+    return sum(
+        left_bit != right_bit
+        for left_bit, right_bit in zip(observed_text, ideal_text, strict=False)
+    )
 
 
 def engineer_gate_sequence_features(
@@ -63,49 +90,65 @@ def engineer_gate_sequence_features(
     sequence_column: str,
     feature_config: FeatureConfig,
     qubit_count_column: str | None = None,
+    bitstring_column: str = "bitstring_aligned",
+    ideal_bitstring_column: str = "ideal_bitstring_aligned",
 ) -> pd.DataFrame:
-    """Convert gate-sequence strings into a numeric feature table.
+    """Build the thesis-aligned engineered features used by the RF baseline.
 
-    TODO: After inspecting the real dataset, extend this module with domain-informed
-    features such as depth, entangling-gate ratios, or temporal fault-position features.
+    Some engineered gate features may be constant for the current Kaggle file because
+    `gate_types` appears fixed in the public sample. We still compute them because:
+    1. the feature logic belongs in the pipeline
+    2. richer or future datasets may vary
+    3. documenting zero-variance features is itself useful thesis evidence
     """
 
-    normalized_top_gates = list(
-        dict.fromkeys(
-            normalize_gate_token(gate, lowercase=feature_config.lowercase_tokens)
-            for gate in feature_config.top_gates
-        )
+    observed_column = (
+        bitstring_column
+        if bitstring_column in frame.columns
+        else "bitstring" if "bitstring" in frame.columns else bitstring_column
+    )
+    ideal_column = (
+        ideal_bitstring_column
+        if ideal_bitstring_column in frame.columns
+        else "ideal_bitstring" if "ideal_bitstring" in frame.columns else ideal_bitstring_column
     )
 
-    rows: list[dict[str, float]] = []
-    for sequence in frame[sequence_column]:
-        tokens = tokenize_gate_sequence(
-            sequence=sequence,
-            delimiters=feature_config.gate_delimiters,
-            lowercase=feature_config.lowercase_tokens,
+    feature_rows: list[dict[str, Any]] = []
+    for _, row in frame.iterrows():
+        tokens = parse_gate_types(row.get(sequence_column), feature_config.gate_delimiters)
+        num_cx = count_specific_gate(tokens, "cx")
+        unique_gates = count_unique_gates(tokens)
+        qubit_count_value = row.get(qubit_count_column) if qubit_count_column else None
+        qubit_count = (
+            float(qubit_count_value)
+            if qubit_count_value is not None and not pd.isna(qubit_count_value)
+            else 0.0
         )
-        token_counts = Counter(tokens)
+        gate_depth_value = row.get("gate_depth")
+        gate_depth = float(gate_depth_value) if pd.notna(gate_depth_value) else 0.0
+        t1_time_value = row.get("t1_time")
+        t1_time = float(t1_time_value) if pd.notna(t1_time_value) else 0.0
+        t2_time_value = row.get("t2_time")
+        t2_time = float(t2_time_value) if pd.notna(t2_time_value) else 0.0
 
-        row: dict[str, float] = {
-            "gate_token_count": float(len(tokens)),
-            "gate_unique_count": float(len(token_counts)),
-            "gate_diversity_ratio": float(len(token_counts) / len(tokens)) if tokens else 0.0,
-            "contains_measure": float("measure" in token_counts),
-        }
-
-        for gate in normalized_top_gates:
-            feature_name = f"gate_count__{_sanitize_feature_name(gate)}"
-            row[feature_name] = float(token_counts.get(gate, 0))
-
-        rows.append(row)
-
-    features = pd.DataFrame.from_records(rows, index=frame.index)
-
-    if qubit_count_column and qubit_count_column in frame.columns:
-        # Keeping qubit count as a feature helps the global baseline, while stratified
-        # runs let us study whether models behave differently at each circuit size.
-        features["qubit_count"] = (
-            pd.to_numeric(frame[qubit_count_column], errors="coerce").fillna(-1)
+        bit_errors = compute_bit_errors(
+            row.get(observed_column),
+            row.get(ideal_column),
+        )
+        observed_error_rate = (
+            safe_divide(float(bit_errors), qubit_count) if bit_errors is not None else 0.0
         )
 
-    return features
+        feature_rows.append(
+            {
+                "num_cx": float(num_cx),
+                "two_qubit_ratio": compute_two_qubit_ratio(tokens, feature_config.two_qubit_gates),
+                "unique_gates": float(unique_gates),
+                "cx_density": safe_divide(float(num_cx), gate_depth),
+                "t2_t1_ratio": safe_divide(t2_time, t1_time),
+                "bit_errors": float(bit_errors) if bit_errors is not None else 0.0,
+                "observed_error_rate": observed_error_rate,
+            }
+        )
+
+    return pd.DataFrame.from_records(feature_rows, index=frame.index)

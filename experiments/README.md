@@ -1,54 +1,74 @@
-# Experiment Outputs
+# Experiments
 
-This folder keeps the project reproducible by separating two things:
+This repository currently stores experiment runs under:
 
-- `experiments/configs/`: the declared plan for an experiment
-- `experiments/runs/`: the saved results of actually executing that plan
+- `experiments/rf_baseline/`
+- `experiments/model_benchmark/`
 
-## Recommended Output Layout
-
-Each run should create a dedicated folder under `experiments/runs/`:
+Single-model Random Forest runs follow this structure:
 
 ```text
-experiments/runs/<experiment_name>/
-|-- resolved_config.yaml
-|-- run_metadata.json
-|-- model_comparison.csv
-|-- global/
-|   |-- logreg/
-|   |   |-- metrics.json
-|   |   |-- classification_report.csv
-|   |   |-- predictions.csv
-|   |   `-- confusion_matrix.png
-|   |-- random_forest/
-|   `-- xgboost/
-`-- qubit_<n>/
-    `-- ...
+experiments/rf_baseline/<timestamp_or_run_name>/
+|-- metrics.json
+|-- split_summary.json
+|-- validation_classification_report.txt
+|-- test_classification_report.txt
+|-- validation_confusion_matrix.png
+|-- test_confusion_matrix.png
+|-- feature_importance.png
+|-- model.joblib
+`-- run_config.yaml
 ```
 
-## Why This Matters
+Multi-model benchmark runs follow this structure:
 
-- `configs/` captures the intent of the experiment
-- `runs/` captures the evidence produced by the experiment
-- storing both makes the thesis methodology auditable and repeatable
+```text
+experiments/model_benchmark/<timestamp_or_run_name>/
+|-- model_comparison.csv
+|-- split_summary.json
+|-- run_config.yaml
+|-- dummy_most_frequent/
+|   |-- metrics.json
+|   |-- validation_classification_report.txt
+|   |-- test_classification_report.txt
+|   |-- validation_confusion_matrix.png
+|   |-- test_confusion_matrix.png
+|   `-- model.joblib
+|-- logistic_regression/
+|   |-- metrics.json
+|   |-- validation_classification_report.txt
+|   |-- test_classification_report.txt
+|   |-- validation_confusion_matrix.png
+|   |-- test_confusion_matrix.png
+|   |-- feature_importance.csv
+|   |-- feature_importance.png
+|   `-- model.joblib
+|-- random_forest/
+|   |-- metrics.json
+|   |-- validation_classification_report.txt
+|   |-- test_classification_report.txt
+|   |-- validation_confusion_matrix.png
+|   |-- test_confusion_matrix.png
+|   |-- feature_importance.csv
+|   |-- feature_importance.png
+|   `-- model.joblib
+`-- xgboost/
+    |-- metrics.json
+    |-- validation_classification_report.txt
+    |-- test_classification_report.txt
+    |-- validation_confusion_matrix.png
+    |-- test_confusion_matrix.png
+    |-- feature_importance.csv
+    |-- feature_importance.png
+    `-- model.joblib
+```
 
-## Naming Convention
+Why this layout matters:
 
-Use experiment names that encode the research question, for example:
+- it keeps model outputs grouped by run
+- it preserves the exact config used for each result
+- it makes thesis tables and figures traceable
 
-- `baseline_nisq_fault_classification`
-- `baseline_qubit_stratified`
-- `xgb_feature_ablation_v1`
-
-## What To Save
-
-Save these by default:
-
-- resolved config file
-- metrics summary
-- per-class report
-- predictions
-- confusion matrix
-- SHAP summary for the chosen tree model
-
-TODO: If you later add cross-validation or hyperparameter sweeps, create a separate subfolder convention for sweep summaries.
+`experiments/configs/` stores planned experiments.
+`experiments/rf_baseline/` stores the original single-model baseline runs.
+`experiments/model_benchmark/` stores fair, same-split model comparisons.

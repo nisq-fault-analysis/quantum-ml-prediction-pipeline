@@ -1,4 +1,4 @@
-"""Command-line entry point for a first-pass exploratory data analysis run."""
+"""Command-line entry point for a lightweight exploratory data analysis run."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Any
 
 import pandas as pd
 
-from src.config.io import load_config
+from src.config.io import ensure_project_directories, load_config
 from src.data.dataset import prepare_research_table, read_tabular_dataset, validate_required_columns
 from src.evaluation.metrics import save_json_report
 from src.features.gate_sequence import engineer_gate_sequence_features
@@ -50,12 +50,13 @@ def run_eda(config_path: str | Path) -> None:
     """Run lightweight EDA and save reusable figures."""
 
     config = load_config(config_path)
+    ensure_project_directories(config)
     dataset = prepare_research_table(read_tabular_dataset(config.data), config.data)
 
     required_columns = [config.data.label_column, config.data.gate_sequence_column]
     validate_required_columns(dataset, required_columns)
 
-    eda_output_dir = config.output.output_dir / "eda"
+    eda_output_dir = config.output.experiment_root / "eda"
     figure_dir = config.output.figures_dir / "eda"
     eda_output_dir.mkdir(parents=True, exist_ok=True)
     figure_dir.mkdir(parents=True, exist_ok=True)
@@ -88,10 +89,10 @@ def run_eda(config_path: str | Path) -> None:
         feature_config=config.features,
     )
     plot_numeric_histogram(
-        values=gate_features["gate_token_count"],
-        output_path=figure_dir / "gate_token_count_histogram.png",
-        title="Gate token count per circuit",
-        xlabel="Token count",
+        values=gate_features["bit_errors"],
+        output_path=figure_dir / "bit_errors_histogram.png",
+        title="Bit errors per circuit",
+        xlabel="Bit errors",
     )
 
     print(f"EDA outputs saved to: {eda_output_dir}")

@@ -1,14 +1,20 @@
-"""Reusable plotting utilities for reports and notebooks."""
+"""Reusable plotting utilities for baseline experiments and EDA."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import shap
 from sklearn.metrics import confusion_matrix
+
+
+def _save_figure(figure: plt.Figure, output_path: str | Path) -> None:
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(destination, dpi=200, bbox_inches="tight")
+    plt.close(figure)
 
 
 def plot_categorical_distribution(
@@ -26,10 +32,7 @@ def plot_categorical_distribution(
     axis.tick_params(axis="x", rotation=45)
     figure.tight_layout()
 
-    destination = Path(output_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=200)
-    plt.close(figure)
+    _save_figure(figure, output_path)
 
 
 def plot_numeric_histogram(
@@ -44,10 +47,7 @@ def plot_numeric_histogram(
     axis.set_ylabel("Frequency")
     figure.tight_layout()
 
-    destination = Path(output_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=200)
-    plt.close(figure)
+    _save_figure(figure, output_path)
 
 
 def plot_confusion_matrix(
@@ -57,7 +57,7 @@ def plot_confusion_matrix(
     output_path: str | Path,
     title: str,
 ) -> None:
-    """Plot a confusion matrix that can be dropped into a thesis chapter."""
+    """Plot a confusion matrix that can be cited in the thesis."""
 
     matrix = confusion_matrix(y_true, y_pred, labels=labels)
 
@@ -85,24 +85,24 @@ def plot_confusion_matrix(
     figure.colorbar(image, ax=axis)
     figure.tight_layout()
 
-    destination = Path(output_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=200)
-    plt.close(figure)
+    _save_figure(figure, output_path)
 
 
-def plot_shap_summary(model: object, features: pd.DataFrame, output_path: str | Path) -> None:
-    """Generate a SHAP summary plot for a fitted tree-based model."""
+def plot_feature_importance(
+    importance_frame: pd.DataFrame,
+    output_path: str | Path,
+    *,
+    title: str = "Random Forest feature importance",
+    top_n: int = 15,
+) -> None:
+    """Plot the top feature importances from the fitted Random Forest model."""
 
-    sample = features if len(features) <= 500 else features.sample(500, random_state=42)
+    top_features = importance_frame.head(top_n).iloc[::-1]
+    figure, axis = plt.subplots(figsize=(10, 6))
+    axis.barh(top_features["feature"], top_features["importance"], color="#dd8452")
+    axis.set_title(title)
+    axis.set_xlabel("Importance")
+    axis.set_ylabel("Feature")
+    figure.tight_layout()
 
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(sample)
-    shap.summary_plot(shap_values, sample, show=False)
-    plt.tight_layout()
-    current_figure = plt.gcf()
-
-    destination = Path(output_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    current_figure.savefig(destination, dpi=200, bbox_inches="tight")
-    plt.close("all")
+    _save_figure(figure, output_path)
