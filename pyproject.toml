@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantum-fault-classifier"
+version = "0.1.0"
+description = "Research repository for ML-based classification of NISQ circuit fault types."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "TODO: Your Name" }]
+dependencies = [
+  "matplotlib>=3.9.0",
+  "numpy>=1.26.0",
+  "pandas>=2.2.0",
+  "pyarrow>=17.0.0",
+  "pydantic>=2.9.0",
+  "PyYAML>=6.0.2",
+  "scikit-learn>=1.5.0",
+  "shap>=0.46.0",
+  "xgboost>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black>=25.0.0",
+  "ipykernel>=6.29.0",
+  "jupyter>=1.1.1",
+  "mypy>=1.13.0",
+  "pytest>=8.3.0",
+  "ruff>=0.8.0",
+]
+
+[project.scripts]
+qfc-eda = "src.data.run_eda:main"
+qfc-train = "src.models.train_baseline:main"
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+pretty = true
+warn_unused_ignores = true
+

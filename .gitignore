@@ -1,0 +1,45 @@
+# Python bytecode and tooling
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment files
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Data artifacts
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Experiment outputs and model binaries
+experiments/runs/*
+!experiments/runs/.gitkeep
+*.pkl
+*.joblib
+
+# Common generated files
+*.log
+*.tmp
+*.bak

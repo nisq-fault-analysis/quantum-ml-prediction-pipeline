@@ -1,0 +1,35 @@
+# Starter configuration for the baseline NISQ fault classification experiment.
+# TODO: Replace the placeholder column names once you inspect the Kaggle dataset schema.
+
+data:
+  dataset_path: data/raw/TODO_nisq_fault_dataset.csv
+  file_format: auto
+  label_column: fault_type
+  gate_sequence_column: gate_sequence
+  qubit_count_column: qubit_count
+  drop_columns: []
+  test_size: 0.2
+  random_state: 42
+  stratify_by_label: true
+
+features:
+  gate_delimiters: [" ", ",", ";", "|", "->"]
+  top_gates: ["x", "h", "cx", "cz", "rz", "ry", "measure"]
+  lowercase_tokens: true
+
+training:
+  enable_models: ["logreg", "random_forest", "xgboost"]
+  stratify_by_qubit_count: true
+  minimum_samples_per_qubit_group: 25
+  generate_shap_for: xgboost
+  class_weight: balanced
+  n_estimators: 300
+  max_depth: 6
+  learning_rate: 0.05
+
+output:
+  experiment_name: baseline_nisq_fault_classification
+  output_dir: experiments/runs/baseline_nisq_fault_classification
+  figures_dir: reports/figures
+  save_predictions: true
+  save_shap: true
