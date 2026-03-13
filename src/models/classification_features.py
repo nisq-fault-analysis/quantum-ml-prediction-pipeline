@@ -10,16 +10,14 @@ from src.config.schema import ProjectConfig
 
 CLASSIFICATION_EXCLUSION_REASONS = {
     "fidelity": (
-        "post-observation outcome quality and therefore unavailable for "
-        "pre-execution prediction"
+        "post-observation outcome quality and therefore unavailable for " "pre-execution prediction"
     ),
     "fidelity_loss": "deterministic transform of observed fidelity and therefore leakage",
     "bit_errors": "computed from observed versus ideal outputs and therefore leakage",
     "observed_error_rate": "derived from measured bit errors and therefore leakage",
     "bit_error_density": "derived from measured bit errors and therefore leakage",
     "timestamp": (
-        "collection-order metadata rather than a scientific pre-execution "
-        "circuit property"
+        "collection-order metadata rather than a scientific pre-execution " "circuit property"
     ),
 }
 

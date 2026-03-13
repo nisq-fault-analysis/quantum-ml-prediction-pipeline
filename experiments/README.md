@@ -83,3 +83,20 @@ Why this layout matters:
 `experiments/fidelity_regression/` stores regression runs that predict fidelity.
 `experiments/qubit_stratified/` stores per-qubit-count classification summaries.
 `experiments/tuned_classification/` stores validation-driven tuning results.
+
+Stratified classification runs now also create one self-contained benchmark folder
+per qubit count, for example:
+
+```text
+experiments/qubit_stratified/<timestamp_or_run_name>/
+|-- best_model_by_qubit_count.csv
+|-- qubit_model_comparison.csv
+|-- qubit_count_5/
+|   |-- model_comparison.csv
+|   |-- split_summary.json
+|   |-- feature_policy.json
+|   |-- subset_metadata.json
+|   `-- <per-model artifacts>
+`-- qubit_count_6/
+    `-- ...
+```

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,24 @@ def _split_name_to_frame(split, split_name: str) -> pd.DataFrame:
     raise ValueError(f"Unsupported split name: {split_name}")
 
 
+def _apply_subset_filter(
+    feature_frame: pd.DataFrame, run_path: Path
+) -> tuple[pd.DataFrame, dict[str, Any] | None]:
+    subset_metadata_path = run_path / "subset_metadata.json"
+    if not subset_metadata_path.exists():
+        return feature_frame, None
+
+    subset_metadata = json.loads(subset_metadata_path.read_text(encoding="utf-8"))
+    filter_column = str(subset_metadata["filter_column"])
+    filter_value = subset_metadata["filter_value"]
+    filtered_frame = feature_frame.loc[feature_frame[filter_column] == filter_value].copy()
+    if filtered_frame.empty:
+        raise ValueError(
+            f"Subset filter {filter_column} == {filter_value!r} produced no rows for {run_path}"
+        )
+    return filtered_frame, subset_metadata
+
+
 def _build_explainer(
     pipeline: Pipeline,
     model_name: str,
@@ -112,6 +131,7 @@ def run_shap_analysis(run_directory: str | Path, split_name: str = "test") -> No
     feature_path, config = _select_feature_path(run_config_path)
     feature_frame = read_tabular_file(feature_path, file_format="auto")
     validate_required_columns(feature_frame, [config.data.id_column, config.data.label_column])
+    feature_frame, subset_metadata = _apply_subset_filter(feature_frame, run_path)
     X, labels = build_classification_features(feature_frame, config)
     split = split_dataset(X, labels, config)
 
@@ -146,6 +166,7 @@ def run_shap_analysis(run_directory: str | Path, split_name: str = "test") -> No
             "selected_model": best_model_row.to_dict(),
             "explained_split": split_name,
             "explained_rows": int(len(explained_frame)),
+            "subset_metadata": subset_metadata,
             "feature_policy": build_classification_feature_policy(feature_frame, config, X),
         },
         shap_directory / "shap_metadata.json",

@@ -5,9 +5,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import matplotlib
 import pandas as pd
 from sklearn.metrics import confusion_matrix
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 
 def _save_figure(figure: plt.Figure, output_path: str | Path) -> None:
