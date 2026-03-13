@@ -16,6 +16,10 @@ from src.config.io import (
 from src.config.schema import ProjectConfig
 from src.data.dataset import read_tabular_file, validate_required_columns
 from src.evaluation.metrics import save_json_report
+from src.models.classification_features import (
+    build_classification_feature_policy,
+    build_classification_features,
+)
 from src.models.model_suite import build_model_comparison_frame, train_model_suite
 from src.models.splitting import build_split_summary
 
@@ -44,26 +48,32 @@ def run_qubit_stratified_suite(config_path: str | Path) -> None:
         feature_frame,
         [config.data.id_column, config.data.label_column, config.data.qubit_count_column],
     )
+    save_json_report(
+        {
+            "prediction_context": config.training.prediction_context,
+            "excluded_feature_columns": list(config.training.excluded_feature_columns),
+        },
+        run_directory / "feature_policy.json",
+    )
 
     comparison_frames: list[pd.DataFrame] = []
     split_summaries: dict[str, dict[str, object]] = {}
+    feature_policy_by_qubit: dict[str, dict[str, object]] = {}
     qubit_counts = sorted(feature_frame[config.data.qubit_count_column].dropna().unique().tolist())
     for qubit_count in qubit_counts:
         subset = feature_frame.loc[
             feature_frame[config.data.qubit_count_column] == qubit_count
         ].copy()
-        labels = subset[config.data.label_column].astype(str)
-        X = subset.drop(
-            columns=[config.data.id_column, config.data.label_column],
-            errors="ignore",
-        )
-        X = X.loc[:, X.nunique(dropna=False) > 1].copy()
+        X, labels = build_classification_features(subset, config)
 
         split, results = train_model_suite(X, labels, config)
         comparison_frame = build_model_comparison_frame(results)
         comparison_frame.insert(0, "qubit_count", int(qubit_count))
         comparison_frames.append(comparison_frame)
         split_summaries[str(int(qubit_count))] = build_split_summary(split)
+        feature_policy_by_qubit[str(int(qubit_count))] = build_classification_feature_policy(
+            subset, config, X
+        )
 
     aggregated_frame = pd.concat(comparison_frames, ignore_index=True)
     aggregated_frame.to_csv(run_directory / "qubit_model_comparison.csv", index=False)
@@ -78,6 +88,7 @@ def run_qubit_stratified_suite(config_path: str | Path) -> None:
     )
     best_rows.to_csv(run_directory / "best_model_by_qubit_count.csv", index=False)
     save_json_report(split_summaries, run_directory / "split_summaries.json")
+    save_json_report(feature_policy_by_qubit, run_directory / "feature_policy_by_qubit.json")
     print(f"Qubit-stratified benchmark artifacts saved to: {run_directory}")
 
 

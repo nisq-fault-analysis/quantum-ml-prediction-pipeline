@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from src.config.schema import ProjectConfig, TrainingConfig
+from src.models.classification_features import build_classification_features
 from src.models.model_suite import build_model_comparison_frame, train_model_suite
 from src.models.splitting import split_dataset
 
@@ -90,3 +91,33 @@ def test_split_dataset_creates_80_15_5_partition() -> None:
     assert len(split.X_train) == 80
     assert len(split.X_validation) == 15
     assert len(split.X_test) == 5
+
+
+def test_build_classification_features_drops_leaky_columns_by_default() -> None:
+    feature_frame = pd.DataFrame(
+        {
+            "circuit_id": ["circ_1", "circ_2"],
+            "error_type": ["readout", "depolarizing"],
+            "qubit_count": [5, 6],
+            "gate_depth": [12, 13],
+            "readout_error": [0.01, 0.02],
+            "fidelity": [0.91, 0.72],
+            "fidelity_loss": [0.09, 0.28],
+            "bit_errors": [1.0, 3.0],
+            "observed_error_rate": [0.2, 0.5],
+            "bit_error_density": [0.08, 0.23],
+            "timestamp": ["2026-01-01T00:00:00", "2026-01-02T00:00:00"],
+            "device_type": ["superconducting", "trapped_ion"],
+        }
+    )
+
+    X, labels = build_classification_features(feature_frame, ProjectConfig())
+
+    assert labels.tolist() == ["readout", "depolarizing"]
+    assert "fidelity" not in X.columns
+    assert "fidelity_loss" not in X.columns
+    assert "bit_errors" not in X.columns
+    assert "observed_error_rate" not in X.columns
+    assert "bit_error_density" not in X.columns
+    assert "timestamp" not in X.columns
+    assert set(X.columns) == {"qubit_count", "gate_depth", "readout_error", "device_type"}

@@ -44,6 +44,8 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
               categorical_feature_columns: ["device_type"]
             training:
               feature_set_name: topology_aware
+              prediction_context: pre_execution
+              excluded_feature_columns: ["fidelity", "timestamp"]
               validation_size: 0.15
               test_size: 0.05
               random_state: 42
@@ -66,6 +68,8 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
 
     assert config.data.dataset_path == Path("data/raw/NISQ-FaultLogs-100K.csv")
     assert config.training.feature_set_name == "topology_aware"
+    assert config.training.prediction_context == "pre_execution"
+    assert config.training.excluded_feature_columns == ["fidelity", "timestamp"]
     assert config.training.validation_size == 0.15
     assert config.output.experiment_root == Path("experiments/rf_baseline")
 

@@ -44,6 +44,7 @@ qfc-train-model-suite = "src.models.train_model_suite:main"
 qfc-train-qubit-stratified = "src.models.train_qubit_stratified_suite:main"
 qfc-train-rf-baseline = "src.models.train_rf_baseline:main"
 qfc-tune-classifiers = "src.models.tune_classifiers:main"
+qfc-run-shap-analysis = "src.models.run_shap_analysis:main"
 
 [tool.setuptools.package-dir]
 "" = "."

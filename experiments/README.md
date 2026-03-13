@@ -28,8 +28,13 @@ Multi-model benchmark runs follow this structure:
 ```text
 experiments/model_benchmark/<timestamp_or_run_name>/
 |-- model_comparison.csv
+|-- feature_policy.json
 |-- split_summary.json
 |-- run_config.yaml
+|-- shap_analysis/
+|   |-- shap_feature_importance.csv
+|   |-- shap_feature_importance.png
+|   `-- shap_metadata.json
 |-- dummy_most_frequent/
 |   |-- metrics.json
 |   |-- validation_classification_report.txt

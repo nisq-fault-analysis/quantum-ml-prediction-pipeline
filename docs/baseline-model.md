@@ -36,7 +36,7 @@ Current public Kaggle data appears to be binary:
 
 ### Baseline Raw
 
-This set stays close to the original tabular measurements:
+The saved baseline table stays close to the original tabular measurements:
 
 - qubit count
 - gate depth
@@ -47,9 +47,13 @@ This set stays close to the original tabular measurements:
 - fidelity
 - device type
 
+For the default leakage-free classification setting, the training code then
+removes `fidelity` before fitting because it is not available for true
+pre-execution prediction.
+
 ### Topology Aware
 
-This extends the raw set with engineered features:
+This extends the saved raw table with engineered features:
 
 - `num_cx`
 - `two_qubit_ratio`
@@ -58,6 +62,10 @@ This extends the raw set with engineered features:
 - `t2_t1_ratio`
 - `bit_errors`
 - `observed_error_rate`
+
+For leakage-free classification, the pipeline keeps the structural gate and
+coherence features but excludes measurement-derived features such as
+`bit_errors`, `observed_error_rate`, `fidelity_loss`, and `bit_error_density`.
 
 ## Preprocessing Choices
 

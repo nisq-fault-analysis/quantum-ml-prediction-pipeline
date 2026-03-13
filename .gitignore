@@ -16,6 +16,7 @@ env/
 
 # Local environment files
 .env
+checklist.md
 
 # Jupyter
 .ipynb_checkpoints/

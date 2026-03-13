@@ -116,6 +116,17 @@ class TrainingConfig(BaseModel):
     feature_set_name: Literal["baseline_raw", "topology_aware", "enhanced_topology"] = (
         "topology_aware"
     )
+    prediction_context: Literal["pre_execution", "post_observation"] = "pre_execution"
+    excluded_feature_columns: list[str] = Field(
+        default_factory=lambda: [
+            "fidelity",
+            "fidelity_loss",
+            "bit_errors",
+            "observed_error_rate",
+            "bit_error_density",
+            "timestamp",
+        ]
+    )
     validation_size: float = Field(default=0.15, gt=0.0, lt=0.5)
     test_size: float = Field(default=0.05, gt=0.0, lt=0.5)
     random_state: int = 42

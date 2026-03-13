@@ -66,6 +66,14 @@ training:
     - random_forest
     - xgboost
   feature_set_name: topology_aware
+  prediction_context: pre_execution
+  excluded_feature_columns:
+    - fidelity
+    - fidelity_loss
+    - bit_errors
+    - observed_error_rate
+    - bit_error_density
+    - timestamp
   validation_size: 0.15
   test_size: 0.05
   random_state: 42

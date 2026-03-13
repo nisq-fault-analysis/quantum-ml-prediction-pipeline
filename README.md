@@ -78,9 +78,10 @@ The training pipeline:
 3. uses the current thesis-friendly convention of `80/15/5`
 4. stratifies by target class when statistically feasible
 5. one-hot encodes only categorical inputs that actually need encoding
-6. trains `DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, and `XGBoost`
-7. saves validation and test metrics separately for each model
-8. saves a `model_comparison.csv` summary and a `split_summary.json` at the run root
+6. drops leakage-prone columns for the default `pre_execution` classification setting
+7. trains `DummyClassifier`, `LogisticRegression`, `RandomForestClassifier`, and `XGBoost`
+8. saves validation and test metrics separately for each model
+9. saves a `model_comparison.csv` summary and a `split_summary.json` at the run root
 
 The repository also supports:
 
@@ -153,12 +154,18 @@ Outputs:
 - one subfolder per model
 - `model_comparison.csv`
 - `split_summary.json`
+- `feature_policy.json`
 - per-model `metrics.json`
 - per-model validation/test classification reports
 - per-model validation/test confusion matrices
 - per-model `model.joblib`
 - per-model importance artifacts when supported
 - `run_config.yaml`
+
+The default classification policy is now explicitly leakage-free for pre-execution prediction.
+It excludes `fidelity`, `fidelity_loss`, `bit_errors`, `observed_error_rate`,
+`bit_error_density`, and `timestamp` from classifier inputs even if those columns are
+present in saved feature tables for regression or later post-observation analysis.
 
 The original single-model Random Forest command still exists when you want to rerun only that reference model:
 
@@ -194,7 +201,7 @@ TODO: Replace the generic repo-role descriptions above with the actual repositor
 ## Beginner Notes
 
 - `circuit_id` is kept for traceability, not used as a model feature.
-- `timestamp` is preserved in the cleaned data but currently excluded from the baseline model because it may encode simulation order rather than a scientifically meaningful signal.
+- `timestamp` is preserved in the cleaned data but excluded from the leakage-free classifier because it may encode simulation order rather than a scientifically meaningful signal.
 - The public Kaggle file appears to use the same `gate_types` string in every row, so some engineered gate features may have zero variance. That is okay for the baseline; the feature report makes that visible instead of hiding it.
 
 ## Key Docs

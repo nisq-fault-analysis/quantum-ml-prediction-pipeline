@@ -23,6 +23,10 @@ from src.config.io import (
 from src.config.schema import ProjectConfig
 from src.data.dataset import read_tabular_file, validate_required_columns
 from src.evaluation.metrics import compute_classification_metrics, save_json_report
+from src.models.classification_features import (
+    build_classification_feature_policy,
+    build_classification_features,
+)
 from src.models.random_forest import save_model_artifact
 from src.models.splitting import build_split_summary, split_dataset
 from src.visualization.plots import plot_confusion_matrix, plot_feature_importance
@@ -201,11 +205,11 @@ def tune_models(config_path: str | Path) -> None:
     feature_frame = read_tabular_file(feature_path, file_format="auto")
     validate_required_columns(feature_frame, [config.data.id_column, config.data.label_column])
 
-    labels = feature_frame[config.data.label_column].astype(str)
-    X = feature_frame.drop(
-        columns=[config.data.id_column, config.data.label_column], errors="ignore"
+    X, labels = build_classification_features(feature_frame, config)
+    save_json_report(
+        build_classification_feature_policy(feature_frame, config, X),
+        run_directory / "feature_policy.json",
     )
-    X = X.loc[:, X.nunique(dropna=False) > 1].copy()
     split = split_dataset(X, labels, config)
     save_json_report(build_split_summary(split), run_directory / "split_summary.json")
 
