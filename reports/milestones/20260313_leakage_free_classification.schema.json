@@ -1,0 +1,778 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "description": "Pointer to a source artifact that supports the milestone report.",
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "path"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "BestRawResults": {
+      "description": "Raw metric winners that should remain separable from interpretation.",
+      "properties": {
+        "global_validation_winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClassificationResultSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "global_test_winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClassificationResultSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "stratified_validation_winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClassificationResultSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "stratified_test_winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClassificationResultSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "subgroup_winners": {
+          "items": {
+            "$ref": "#/$defs/ClassificationResultSummary"
+          },
+          "title": "Subgroup Winners",
+          "type": "array"
+        },
+        "regression_reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegressionResultSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tuning_comparisons": {
+          "items": {
+            "$ref": "#/$defs/TuningComparison"
+          },
+          "title": "Tuning Comparisons",
+          "type": "array"
+        },
+        "shap_highlights": {
+          "items": {
+            "$ref": "#/$defs/ShapRunSummary"
+          },
+          "title": "Shap Highlights",
+          "type": "array"
+        }
+      },
+      "title": "BestRawResults",
+      "type": "object"
+    },
+    "ClassificationResultSummary": {
+      "description": "Compact summary of one classification winner.",
+      "properties": {
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "subgroup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subgroup"
+        },
+        "artifact_subdirectory": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Subdirectory"
+        },
+        "model_name": {
+          "title": "Model Name",
+          "type": "string"
+        },
+        "model_display_name": {
+          "title": "Model Display Name",
+          "type": "string"
+        },
+        "validation_macro_f1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Macro F1"
+        },
+        "validation_accuracy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Accuracy"
+        },
+        "test_macro_f1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test Macro F1"
+        },
+        "test_accuracy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test Accuracy"
+        },
+        "feature_columns_before_encoding": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Feature Columns Before Encoding"
+        },
+        "run_directory": {
+          "title": "Run Directory",
+          "type": "string"
+        },
+        "source_table": {
+          "title": "Source Table",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "model_name",
+        "model_display_name",
+        "run_directory",
+        "source_table"
+      ],
+      "title": "ClassificationResultSummary",
+      "type": "object"
+    },
+    "ComparisonOverview": {
+      "description": "What the milestone compared and under which feature policy.",
+      "properties": {
+        "models_compared": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Models Compared",
+          "type": "array"
+        },
+        "feature_sets_compared": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Feature Sets Compared",
+          "type": "array"
+        },
+        "tuning_was_run": {
+          "default": false,
+          "title": "Tuning Was Run",
+          "type": "boolean"
+        },
+        "shap_was_run": {
+          "default": false,
+          "title": "Shap Was Run",
+          "type": "boolean"
+        },
+        "prediction_contexts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prediction Contexts",
+          "type": "array"
+        },
+        "excluded_feature_columns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Excluded Feature Columns",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "title": "ComparisonOverview",
+      "type": "object"
+    },
+    "MainScientificTakeaway": {
+      "description": "Interpretation section that explains what the results mean.",
+      "properties": {
+        "plain_language_conclusion": {
+          "title": "Plain Language Conclusion",
+          "type": "string"
+        },
+        "scientific_meaning": {
+          "title": "Scientific Meaning",
+          "type": "string"
+        },
+        "negative_results_to_preserve": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Negative Results To Preserve",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plain_language_conclusion",
+        "scientific_meaning"
+      ],
+      "title": "MainScientificTakeaway",
+      "type": "object"
+    },
+    "RegressionResultSummary": {
+      "description": "Compact summary of one regression winner.",
+      "properties": {
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "model_name": {
+          "title": "Model Name",
+          "type": "string"
+        },
+        "model_display_name": {
+          "title": "Model Display Name",
+          "type": "string"
+        },
+        "validation_r2": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation R2"
+        },
+        "validation_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Mae"
+        },
+        "test_r2": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test R2"
+        },
+        "test_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test Mae"
+        },
+        "feature_columns_before_encoding": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Feature Columns Before Encoding"
+        },
+        "run_directory": {
+          "title": "Run Directory",
+          "type": "string"
+        },
+        "source_table": {
+          "title": "Source Table",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "model_name",
+        "model_display_name",
+        "run_directory",
+        "source_table"
+      ],
+      "title": "RegressionResultSummary",
+      "type": "object"
+    },
+    "ReportMetadata": {
+      "description": "Top-level metadata shown at the start of the report.",
+      "properties": {
+        "report_title": {
+          "title": "Report Title",
+          "type": "string"
+        },
+        "report_slug": {
+          "title": "Report Slug",
+          "type": "string"
+        },
+        "report_timestamp": {
+          "title": "Report Timestamp",
+          "type": "string"
+        },
+        "run_group_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Group Name"
+        },
+        "dataset_used": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Used"
+        },
+        "split_strategy": {
+          "title": "Split Strategy",
+          "type": "string"
+        },
+        "experiment_scope": {
+          "title": "Experiment Scope",
+          "type": "string"
+        },
+        "subgroup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subgroup"
+        },
+        "report_config_path": {
+          "title": "Report Config Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_title",
+        "report_slug",
+        "report_timestamp",
+        "split_strategy",
+        "experiment_scope",
+        "report_config_path"
+      ],
+      "title": "ReportMetadata",
+      "type": "object"
+    },
+    "ShapFeatureImportance": {
+      "description": "One SHAP feature row kept in the durable summary.",
+      "properties": {
+        "feature": {
+          "title": "Feature",
+          "type": "string"
+        },
+        "mean_abs_shap": {
+          "title": "Mean Abs Shap",
+          "type": "number"
+        }
+      },
+      "required": [
+        "feature",
+        "mean_abs_shap"
+      ],
+      "title": "ShapFeatureImportance",
+      "type": "object"
+    },
+    "ShapRunSummary": {
+      "description": "Compact summary of a SHAP explanation run.",
+      "properties": {
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "subgroup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subgroup"
+        },
+        "selected_model_display_name": {
+          "title": "Selected Model Display Name",
+          "type": "string"
+        },
+        "explained_split": {
+          "title": "Explained Split",
+          "type": "string"
+        },
+        "top_features": {
+          "items": {
+            "$ref": "#/$defs/ShapFeatureImportance"
+          },
+          "title": "Top Features",
+          "type": "array"
+        },
+        "source_directory": {
+          "title": "Source Directory",
+          "type": "string"
+        },
+        "source_csv": {
+          "title": "Source Csv",
+          "type": "string"
+        },
+        "source_metadata": {
+          "title": "Source Metadata",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "selected_model_display_name",
+        "explained_split",
+        "source_directory",
+        "source_csv",
+        "source_metadata"
+      ],
+      "title": "ShapRunSummary",
+      "type": "object"
+    },
+    "ThesisFramingRecommendation": {
+      "description": "How to use the milestone later in the thesis.",
+      "properties": {
+        "headline_result": {
+          "title": "Headline Result",
+          "type": "string"
+        },
+        "more_trustworthy_result": {
+          "title": "More Trustworthy Result",
+          "type": "string"
+        },
+        "held_out_test_comparator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Held Out Test Comparator"
+        },
+        "presentation_notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Presentation Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "headline_result",
+        "more_trustworthy_result"
+      ],
+      "title": "ThesisFramingRecommendation",
+      "type": "object"
+    },
+    "TuningComparison": {
+      "description": "Comparison between untuned subgroup winner and tuned rerun.",
+      "properties": {
+        "subgroup": {
+          "title": "Subgroup",
+          "type": "string"
+        },
+        "untuned_model_display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Untuned Model Display Name"
+        },
+        "tuned_model_display_name": {
+          "title": "Tuned Model Display Name",
+          "type": "string"
+        },
+        "untuned_validation_macro_f1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Untuned Validation Macro F1"
+        },
+        "tuned_validation_macro_f1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tuned Validation Macro F1"
+        },
+        "untuned_test_macro_f1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Untuned Test Macro F1"
+        },
+        "tuned_test_macro_f1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tuned Test Macro F1"
+        },
+        "validation_delta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Delta"
+        },
+        "test_delta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Test Delta"
+        },
+        "interpretation": {
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "untuned_run_directory": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Untuned Run Directory"
+        },
+        "tuned_run_directory": {
+          "title": "Tuned Run Directory",
+          "type": "string"
+        },
+        "source_table": {
+          "title": "Source Table",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subgroup",
+        "tuned_model_display_name",
+        "interpretation",
+        "tuned_run_directory",
+        "source_table"
+      ],
+      "title": "TuningComparison",
+      "type": "object"
+    }
+  },
+  "description": "Complete structured milestone report.",
+  "properties": {
+    "metadata": {
+      "$ref": "#/$defs/ReportMetadata"
+    },
+    "what_was_compared": {
+      "$ref": "#/$defs/ComparisonOverview"
+    },
+    "best_raw_results": {
+      "$ref": "#/$defs/BestRawResults"
+    },
+    "main_scientific_takeaway": {
+      "$ref": "#/$defs/MainScientificTakeaway"
+    },
+    "important_caveats": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Important Caveats",
+      "type": "array"
+    },
+    "methodological_warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Methodological Warnings",
+      "type": "array"
+    },
+    "thesis_framing_recommendation": {
+      "$ref": "#/$defs/ThesisFramingRecommendation"
+    },
+    "recommended_next_steps": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommended Next Steps",
+      "type": "array"
+    },
+    "thesis_reuse_sentences": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Thesis Reuse Sentences",
+      "type": "array"
+    },
+    "artifact_references": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "title": "Artifact References",
+      "type": "array"
+    }
+  },
+  "required": [
+    "metadata",
+    "what_was_compared",
+    "best_raw_results",
+    "main_scientific_takeaway",
+    "thesis_framing_recommendation"
+  ],
+  "title": "MilestoneReport",
+  "type": "object"
+}

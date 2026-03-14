@@ -92,6 +92,7 @@ class FeatureConfig(BaseModel):
     topology_feature_path: Path = Path("data/processed/rf_baseline_topology_aware_features.parquet")
     enhanced_feature_path: Path = Path("data/processed/rf_enhanced_topology_features.parquet")
     feature_report_path: Path = Path("data/processed/rf_feature_report.json")
+    dataset_profile_path: Path = Path("data/processed/rf_dataset_profile.json")
     gate_delimiters: list[str] = Field(default_factory=lambda: [",", ";", "|", "->"])
     two_qubit_gates: list[str] = Field(default_factory=lambda: ["cx", "cz", "swap"])
     baseline_numeric_columns: list[str] = Field(

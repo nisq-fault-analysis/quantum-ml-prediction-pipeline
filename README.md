@@ -88,6 +88,7 @@ The repository also supports:
 - fidelity regression with `DummyRegressor`, `RandomForestRegressor`, and `XGBoostRegressor`
 - qubit-count-stratified classification comparisons
 - lightweight validation-driven tuning for Random Forest and XGBoost
+- durable milestone reports that preserve raw results, interpretation, caveats, and thesis framing
 
 ## Setup
 
@@ -141,6 +142,7 @@ Outputs:
 
 - baseline/raw feature set
 - topology-aware feature set
+- dataset profile for future snapshots
 - feature report showing zero-variance columns
 
 ### Step 3: Train the multi-model benchmark suite
@@ -167,6 +169,16 @@ It excludes `fidelity`, `fidelity_loss`, `bit_errors`, `observed_error_rate`,
 `bit_error_density`, and `timestamp` from classifier inputs even if those columns are
 present in saved feature tables for regression or later post-observation analysis.
 
+The feature-building step now also saves a dataset profile JSON that records:
+
+- gate-sequence diversity
+- gate-type frequencies
+- qubit-count coverage
+- zero-variance warnings by feature set
+
+That profile is meant to answer, at a glance, whether a newly uploaded dataset snapshot
+actually contains richer topology signal than the original public Kaggle file.
+
 The original single-model Random Forest command still exists when you want to rerun only that reference model:
 
 ```powershell
@@ -186,7 +198,42 @@ make train-rf-baseline
 make train-fidelity-regression
 make train-qubit-stratified
 make tune-classifiers
+make build-experiment-summary
 ```
+
+## Master Experiment Summary
+
+To compare saved runs across models, feature sets, and future dataset snapshots, build the
+master experiment matrix:
+
+```powershell
+.venv\Scripts\python.exe -m src.reporting.build_experiment_summary --experiments-root experiments --output-dir reports\experiments
+```
+
+This writes:
+
+- `reports/experiments/master_experiment_matrix.csv`
+- `reports/experiments/master_experiment_inventory.json`
+
+The matrix is a row-per-model summary across the standard experiment roots, including
+global classification, qubit-stratified classification, tuned subgroup reruns, fidelity
+regression, and the legacy single-model RF baseline.
+
+## Durable Milestone Reports
+
+When an experiment becomes important enough to cite later in the thesis, generate a durable milestone report instead of relying on memory or terminal output alone:
+
+```powershell
+.venv\Scripts\python.exe -m src.reporting.generate_milestone_report --config reports\milestone_configs\20260313_leakage_free_classification.yaml
+```
+
+This writes:
+
+- a Markdown summary for humans
+- a JSON summary for reuse
+- a JSON schema for the report structure
+
+The output lives under `reports/milestones/`. The config file stores manual interpretation separately from artifact paths so negative results, caveats, and thesis framing survive alongside the metrics.
 
 ## How This Repo Connects To Other Repos In The Org
 
@@ -209,4 +256,5 @@ TODO: Replace the generic repo-role descriptions above with the actual repositor
 - [docs/architecture.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/architecture.md)
 - [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/data-flow.md)
 - [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/baseline-model.md)
+- [docs/milestone-reports.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/milestone-reports.md)
 - [docs/thesis-chapter-mapping.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/thesis-chapter-mapping.md)

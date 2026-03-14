@@ -4,6 +4,8 @@ SUITE_CONFIG ?= experiments/configs/model_suite.yaml
 REGRESSION_CONFIG ?= experiments/configs/fidelity_regression.yaml
 STRATIFIED_CONFIG ?= experiments/configs/qubit_stratified.yaml
 TUNING_CONFIG ?= experiments/configs/tuned_classification.yaml
+EXPERIMENTS_ROOT ?= experiments
+EXPERIMENT_SUMMARY_DIR ?= reports/experiments
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
@@ -44,3 +46,6 @@ train-qubit-stratified:
 
 tune-classifiers:
 	$(PYTHON) -m src.models.tune_classifiers --config $(TUNING_CONFIG)
+
+build-experiment-summary:
+	$(PYTHON) -m src.reporting.build_experiment_summary --experiments-root $(EXPERIMENTS_ROOT) --output-dir $(EXPERIMENT_SUMMARY_DIR)

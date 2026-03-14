@@ -6,7 +6,7 @@ from textwrap import dedent
 import pandas as pd
 import pytest
 
-from src.config.io import load_config
+from src.config.io import build_run_directory, load_config
 from src.config.schema import DataConfig
 from src.data.dataset import validate_required_columns
 from src.data.prepare import normalize_bitstring, prepare_raw_dataset
@@ -38,6 +38,7 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
               baseline_feature_path: data/processed/raw.parquet
               topology_feature_path: data/processed/topology.parquet
               feature_report_path: data/processed/report.json
+              dataset_profile_path: data/processed/profile.json
               gate_delimiters: [","]
               two_qubit_gates: ["cx"]
               baseline_numeric_columns: ["qubit_count", "gate_depth"]
@@ -121,3 +122,23 @@ def test_prepare_raw_dataset_reports_expected_ranges_for_invalid_numeric_rows() 
     assert invalid_details["out_of_range_t1_time"]["observed_min"] == -1.5
     assert invalid_details["out_of_range_t1_time"]["observed_max"] == -1.5
     assert "validation_issue_details" in prepared.invalid_rows.columns
+
+
+def test_build_run_directory_avoids_timestamp_collisions(tmp_path: Path) -> None:
+    project_config_path = tmp_path / "config.yaml"
+    project_config_path.write_text(
+        dedent(f"""
+            output:
+              experiment_root: {(tmp_path / "experiments").as_posix()}
+            """),
+        encoding="utf-8",
+    )
+
+    project_config = load_config(project_config_path)
+
+    first_directory = build_run_directory(project_config)
+    second_directory = build_run_directory(project_config)
+
+    assert first_directory.exists()
+    assert second_directory.exists()
+    assert first_directory != second_directory

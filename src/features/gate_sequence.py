@@ -11,10 +11,7 @@ import pandas as pd
 
 from src.config.schema import FeatureConfig
 
-
-def _delimiter_pattern(delimiters: Sequence[str]) -> re.Pattern[str]:
-    escaped_delimiters = [re.escape(delimiter) for delimiter in delimiters]
-    return re.compile("|".join(escaped_delimiters))
+GATE_HEAD_PATTERN = re.compile(r"[a-z][a-z0-9_]*")
 
 
 def safe_divide(numerator: float, denominator: float) -> float:
@@ -28,7 +25,83 @@ def safe_divide(numerator: float, denominator: float) -> float:
 def normalize_gate_token(token: str) -> str:
     """Normalize gate names to a consistent lowercase representation."""
 
-    return token.strip().lower()
+    cleaned = token.strip().lower().strip("\"'`")
+    if not cleaned:
+        return ""
+
+    if ":" in cleaned:
+        colon_parts = [part.strip() for part in cleaned.split(":") if part.strip()]
+        if colon_parts:
+            cleaned = colon_parts[-1]
+
+    head = re.split(r"[\s(\[{<]", cleaned, maxsplit=1)[0].strip(")]}>,")
+    if head:
+        match = GATE_HEAD_PATTERN.match(head)
+        if match is not None:
+            return match.group(0)
+
+    match = GATE_HEAD_PATTERN.search(cleaned)
+    return match.group(0) if match is not None else cleaned
+
+
+def split_gate_sequence(gate_types: str, delimiters: Sequence[str]) -> list[str]:
+    """Split a gate string while keeping delimiters inside brackets untouched."""
+
+    ordered_delimiters = sorted(
+        {delimiter for delimiter in delimiters if delimiter},
+        key=len,
+        reverse=True,
+    )
+    if not ordered_delimiters:
+        return [gate_types]
+
+    segments: list[str] = []
+    current_segment: list[str] = []
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    index = 0
+
+    while index < len(gate_types):
+        if paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+            matched_delimiter = next(
+                (
+                    delimiter
+                    for delimiter in ordered_delimiters
+                    if gate_types.startswith(delimiter, index)
+                ),
+                None,
+            )
+            if matched_delimiter is not None:
+                segment = "".join(current_segment).strip()
+                if segment:
+                    segments.append(segment)
+                current_segment = []
+                index += len(matched_delimiter)
+                continue
+
+        character = gate_types[index]
+        if character == "(":
+            paren_depth += 1
+        elif character == ")" and paren_depth > 0:
+            paren_depth -= 1
+        elif character == "[":
+            bracket_depth += 1
+        elif character == "]" and bracket_depth > 0:
+            bracket_depth -= 1
+        elif character == "{":
+            brace_depth += 1
+        elif character == "}" and brace_depth > 0:
+            brace_depth -= 1
+
+        current_segment.append(character)
+        index += 1
+
+    final_segment = "".join(current_segment).strip()
+    if final_segment:
+        segments.append(final_segment)
+
+    return segments
 
 
 def parse_gate_types(gate_types: object, delimiters: Sequence[str]) -> list[str]:
@@ -41,8 +114,8 @@ def parse_gate_types(gate_types: object, delimiters: Sequence[str]) -> list[str]
     if not text:
         return []
 
-    normalized_text = _delimiter_pattern(delimiters).sub(" ", text)
-    return [normalize_gate_token(token) for token in normalized_text.split() if token.strip()]
+    tokens = [normalize_gate_token(token) for token in split_gate_sequence(text, delimiters)]
+    return [token for token in tokens if token]
 
 
 def count_specific_gate(tokens: Sequence[str], gate_name: str) -> int:

@@ -36,6 +36,7 @@ def ensure_project_directories(config: ProjectConfig) -> None:
         config.features.topology_feature_path.parent,
         config.features.enhanced_feature_path.parent,
         config.features.feature_report_path.parent,
+        config.features.dataset_profile_path.parent,
     ]
 
     for directory in required_directories:
@@ -56,9 +57,21 @@ def build_run_directory(config: ProjectConfig) -> Path:
     """Build a timestamped experiment folder unless the config pins a run name."""
 
     run_name = config.output.run_name
-    if not run_name:
-        run_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if run_name:
+        run_directory = config.output.experiment_root / run_name
+        run_directory.mkdir(parents=True, exist_ok=True)
+        return run_directory
 
-    run_directory = config.output.experiment_root / run_name
-    run_directory.mkdir(parents=True, exist_ok=True)
-    return run_directory
+    base_run_name = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_directory = config.output.experiment_root / base_run_name
+    if not run_directory.exists():
+        run_directory.mkdir(parents=True, exist_ok=False)
+        return run_directory
+
+    suffix = 1
+    while True:
+        candidate_directory = config.output.experiment_root / f"{base_run_name}_{suffix:02d}"
+        if not candidate_directory.exists():
+            candidate_directory.mkdir(parents=True, exist_ok=False)
+            return candidate_directory
+        suffix += 1

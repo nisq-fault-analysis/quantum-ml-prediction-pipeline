@@ -11,6 +11,7 @@ from src.config.io import ensure_project_directories, load_config
 from src.config.schema import ProjectConfig
 from src.data.dataset import read_tabular_file, validate_required_columns
 from src.evaluation.metrics import save_json_report
+from src.features.dataset_profile import build_dataset_profile
 from src.features.gate_sequence import (
     engineer_enhanced_classification_features,
     engineer_gate_sequence_features,
@@ -73,20 +74,13 @@ def build_feature_sets(
     }
 
 
-def run_build_features(config_path: str | Path) -> None:
-    """Read the cleaned dataset, build feature sets, and save them to disk."""
+def build_feature_report(
+    feature_sets: dict[str, pd.DataFrame],
+    config: ProjectConfig,
+) -> dict[str, dict[str, object]]:
+    """Describe saved feature tables and surface zero-variance warnings."""
 
-    config = load_config(config_path)
-    ensure_project_directories(config)
-
-    cleaned_frame = read_tabular_file(config.data.cleaned_dataset_path, file_format="auto")
-    feature_sets = build_feature_sets(cleaned_frame, config)
-
-    feature_sets["baseline_raw"].to_parquet(config.features.baseline_feature_path, index=False)
-    feature_sets["topology_aware"].to_parquet(config.features.topology_feature_path, index=False)
-    feature_sets["enhanced_topology"].to_parquet(config.features.enhanced_feature_path, index=False)
-
-    feature_report = {}
+    feature_report: dict[str, dict[str, object]] = {}
     for feature_set_name, feature_frame in feature_sets.items():
         candidate_feature_columns = [
             column
@@ -104,12 +98,31 @@ def run_build_features(config_path: str | Path) -> None:
             "feature_columns": candidate_feature_columns,
             "zero_variance_columns": zero_variance_columns,
         }
+    return feature_report
 
+
+def run_build_features(config_path: str | Path) -> None:
+    """Read the cleaned dataset, build feature sets, and save them to disk."""
+
+    config = load_config(config_path)
+    ensure_project_directories(config)
+
+    cleaned_frame = read_tabular_file(config.data.cleaned_dataset_path, file_format="auto")
+    feature_sets = build_feature_sets(cleaned_frame, config)
+
+    feature_sets["baseline_raw"].to_parquet(config.features.baseline_feature_path, index=False)
+    feature_sets["topology_aware"].to_parquet(config.features.topology_feature_path, index=False)
+    feature_sets["enhanced_topology"].to_parquet(config.features.enhanced_feature_path, index=False)
+
+    feature_report = build_feature_report(feature_sets, config)
+    dataset_profile = build_dataset_profile(cleaned_frame, config, feature_report)
     save_json_report(feature_report, config.features.feature_report_path)
+    save_json_report(dataset_profile, config.features.dataset_profile_path)
     print(f"Baseline feature set saved to: {config.features.baseline_feature_path}")
     print(f"Topology-aware feature set saved to: {config.features.topology_feature_path}")
     print(f"Enhanced topology feature set saved to: {config.features.enhanced_feature_path}")
     print(f"Feature report saved to: {config.features.feature_report_path}")
+    print(f"Dataset profile saved to: {config.features.dataset_profile_path}")
 
 
 def parse_args() -> argparse.Namespace:

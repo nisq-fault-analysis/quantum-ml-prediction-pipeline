@@ -1,0 +1,511 @@
+{
+  "metadata": {
+    "report_title": "Leakage-Free Classification Milestone",
+    "report_slug": "20260313_leakage_free_classification",
+    "report_timestamp": "2026-03-13T23:38:03",
+    "run_group_name": "2026-03-13 leakage-free classification and regression milestone",
+    "dataset_used": "data/raw/NISQ-FaultLogs-100K.csv",
+    "split_strategy": "Single deterministic 80/15/5 train/validation/test split shared across compared models.",
+    "experiment_scope": "Global leakage-free fault classification, qubit-count-stratified classification, fidelity regression reference, SHAP interpretation, and targeted subgroup tuning.",
+    "subgroup": "qubit_count",
+    "report_config_path": "reports\\milestone_configs\\20260313_leakage_free_classification.yaml"
+  },
+  "what_was_compared": {
+    "models_compared": [
+      "Dummy Most Frequent",
+      "Logistic Regression",
+      "Random Forest",
+      "XGBoost",
+      "Random Forest Regressor",
+      "XGBoost Regressor"
+    ],
+    "feature_sets_compared": [
+      "baseline_raw",
+      "enhanced_topology"
+    ],
+    "tuning_was_run": true,
+    "shap_was_run": true,
+    "prediction_contexts": [
+      "pre_execution"
+    ],
+    "excluded_feature_columns": [
+      "fidelity",
+      "fidelity_loss",
+      "bit_errors",
+      "observed_error_rate",
+      "bit_error_density",
+      "timestamp"
+    ],
+    "notes": [
+      "Classification uses the leakage-free pre_execution feature policy.",
+      "Regression is included as a reference result rather than the thesis headline for fault-type classification."
+    ]
+  },
+  "best_raw_results": {
+    "global_validation_winner": {
+      "scope": "global classification validation winner",
+      "subgroup": null,
+      "artifact_subdirectory": null,
+      "model_name": "xgboost",
+      "model_display_name": "XGBoost",
+      "validation_macro_f1": 0.4992393442280395,
+      "validation_accuracy": 0.4994998332777592,
+      "test_macro_f1": 0.5071933729195076,
+      "test_accuracy": 0.50750150030006,
+      "feature_columns_before_encoding": 7,
+      "run_directory": "experiments\\model_benchmark\\20260313_221036",
+      "source_table": "experiments\\model_benchmark\\20260313_221036\\model_comparison.csv"
+    },
+    "global_test_winner": {
+      "scope": "global classification held-out test winner",
+      "subgroup": null,
+      "artifact_subdirectory": null,
+      "model_name": "xgboost",
+      "model_display_name": "XGBoost",
+      "validation_macro_f1": 0.4992393442280395,
+      "validation_accuracy": 0.4994998332777592,
+      "test_macro_f1": 0.5071933729195076,
+      "test_accuracy": 0.50750150030006,
+      "feature_columns_before_encoding": 7,
+      "run_directory": "experiments\\model_benchmark\\20260313_221036",
+      "source_table": "experiments\\model_benchmark\\20260313_221036\\model_comparison.csv"
+    },
+    "stratified_validation_winner": {
+      "scope": "stratified validation winner",
+      "subgroup": "qubit_count = 8",
+      "artifact_subdirectory": "qubit_count_8",
+      "model_name": "random_forest",
+      "model_display_name": "Random Forest",
+      "validation_macro_f1": 0.52606866214523,
+      "validation_accuracy": 0.5261248185776488,
+      "test_macro_f1": 0.5434782608695652,
+      "test_accuracy": 0.5434782608695652,
+      "feature_columns_before_encoding": 6,
+      "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+      "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+    },
+    "stratified_test_winner": {
+      "scope": "stratified held-out test winner",
+      "subgroup": "qubit_count = 6",
+      "artifact_subdirectory": "qubit_count_6",
+      "model_name": "xgboost",
+      "model_display_name": "XGBoost",
+      "validation_macro_f1": 0.5215952888666089,
+      "validation_accuracy": 0.5216117216117216,
+      "test_macro_f1": 0.5493112228874039,
+      "test_accuracy": 0.5494505494505495,
+      "feature_columns_before_encoding": 6,
+      "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+      "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+    },
+    "subgroup_winners": [
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 5",
+        "artifact_subdirectory": "qubit_count_5",
+        "model_name": "random_forest",
+        "model_display_name": "Random Forest",
+        "validation_macro_f1": 0.5134822248458613,
+        "validation_accuracy": 0.5194709772226305,
+        "test_macro_f1": 0.4767075445096885,
+        "test_accuracy": 0.486784140969163,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 6",
+        "artifact_subdirectory": "qubit_count_6",
+        "model_name": "xgboost",
+        "model_display_name": "XGBoost",
+        "validation_macro_f1": 0.5215952888666089,
+        "validation_accuracy": 0.5216117216117216,
+        "test_macro_f1": 0.5493112228874039,
+        "test_accuracy": 0.5494505494505495,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 7",
+        "artifact_subdirectory": "qubit_count_7",
+        "model_name": "random_forest",
+        "model_display_name": "Random Forest",
+        "validation_macro_f1": 0.5070647264336791,
+        "validation_accuracy": 0.5073746312684366,
+        "test_macro_f1": 0.4839449428897633,
+        "test_accuracy": 0.4845132743362831,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 8",
+        "artifact_subdirectory": "qubit_count_8",
+        "model_name": "random_forest",
+        "model_display_name": "Random Forest",
+        "validation_macro_f1": 0.52606866214523,
+        "validation_accuracy": 0.5261248185776488,
+        "test_macro_f1": 0.5434782608695652,
+        "test_accuracy": 0.5434782608695652,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 9",
+        "artifact_subdirectory": "qubit_count_9",
+        "model_name": "logistic_regression",
+        "model_display_name": "Logistic Regression",
+        "validation_macro_f1": 0.5119248585809095,
+        "validation_accuracy": 0.5239498894620487,
+        "test_macro_f1": 0.5202230126693578,
+        "test_accuracy": 0.5320088300220751,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 10",
+        "artifact_subdirectory": "qubit_count_10",
+        "model_name": "logistic_regression",
+        "model_display_name": "Logistic Regression",
+        "validation_macro_f1": 0.5068066520375195,
+        "validation_accuracy": 0.5106071689831748,
+        "test_macro_f1": 0.5037216985715673,
+        "test_accuracy": 0.5087719298245614,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 11",
+        "artifact_subdirectory": "qubit_count_11",
+        "model_name": "xgboost",
+        "model_display_name": "XGBoost",
+        "validation_macro_f1": 0.5243770682864167,
+        "validation_accuracy": 0.5247813411078717,
+        "test_macro_f1": 0.4994631071065529,
+        "test_accuracy": 0.5,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 12",
+        "artifact_subdirectory": "qubit_count_12",
+        "model_name": "xgboost",
+        "model_display_name": "XGBoost",
+        "validation_macro_f1": 0.4814133189202109,
+        "validation_accuracy": 0.4823269513991163,
+        "test_macro_f1": 0.467326655379526,
+        "test_accuracy": 0.4679911699779249,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 13",
+        "artifact_subdirectory": "qubit_count_13",
+        "model_name": "xgboost",
+        "model_display_name": "XGBoost",
+        "validation_macro_f1": 0.5035640263037003,
+        "validation_accuracy": 0.5036710719530103,
+        "test_macro_f1": 0.5065983542928116,
+        "test_accuracy": 0.5066079295154186,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 14",
+        "artifact_subdirectory": "qubit_count_14",
+        "model_name": "xgboost",
+        "model_display_name": "XGBoost",
+        "validation_macro_f1": 0.5075756480929877,
+        "validation_accuracy": 0.5076810534016094,
+        "test_macro_f1": 0.5196790934582586,
+        "test_accuracy": 0.5197368421052632,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      },
+      {
+        "scope": "stratified subgroup winner",
+        "subgroup": "qubit_count = 15",
+        "artifact_subdirectory": "qubit_count_15",
+        "model_name": "logistic_regression",
+        "model_display_name": "Logistic Regression",
+        "validation_macro_f1": 0.4971094540437918,
+        "validation_accuracy": 0.5084745762711864,
+        "test_macro_f1": 0.4448086887206058,
+        "test_accuracy": 0.4569536423841059,
+        "feature_columns_before_encoding": 6,
+        "run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "source_table": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+      }
+    ],
+    "regression_reference": {
+      "scope": "fidelity regression reference",
+      "model_name": "random_forest_regressor",
+      "model_display_name": "Random Forest Regressor",
+      "validation_r2": 0.9409697368323552,
+      "validation_mae": 0.043332605891438,
+      "test_r2": 0.9411725283748176,
+      "test_mae": 0.0428651714378485,
+      "feature_columns_before_encoding": 14,
+      "run_directory": "experiments\\fidelity_regression\\20260313_203701",
+      "source_table": "experiments\\fidelity_regression\\20260313_203701\\model_comparison.csv"
+    },
+    "tuning_comparisons": [
+      {
+        "subgroup": "qubit_count = 6",
+        "untuned_model_display_name": "XGBoost",
+        "tuned_model_display_name": "XGBoost",
+        "untuned_validation_macro_f1": 0.5215952888666089,
+        "tuned_validation_macro_f1": 0.526006308430401,
+        "untuned_test_macro_f1": 0.5493112228874039,
+        "tuned_test_macro_f1": 0.5400906325416286,
+        "validation_delta": 0.004411019563792085,
+        "test_delta": -0.00922059034577527,
+        "interpretation": "Validation improved but held-out test performance worsened, which is consistent with overfitting during tuning.",
+        "untuned_run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "tuned_run_directory": "experiments\\tuned_classification\\20260313_225202",
+        "source_table": "experiments\\tuned_classification\\20260313_225202\\tuned_model_comparison.csv"
+      },
+      {
+        "subgroup": "qubit_count = 8",
+        "untuned_model_display_name": "Random Forest",
+        "tuned_model_display_name": "XGBoost",
+        "untuned_validation_macro_f1": 0.52606866214523,
+        "tuned_validation_macro_f1": 0.5413642960812772,
+        "untuned_test_macro_f1": 0.5434782608695652,
+        "tuned_test_macro_f1": 0.5152151002603982,
+        "validation_delta": 0.01529563393604727,
+        "test_delta": -0.028263160609167004,
+        "interpretation": "Validation improved but held-out test performance worsened, which is consistent with overfitting during tuning.",
+        "untuned_run_directory": "experiments\\qubit_stratified\\20260313_223849",
+        "tuned_run_directory": "experiments\\tuned_classification\\20260313_225237",
+        "source_table": "experiments\\tuned_classification\\20260313_225237\\tuned_model_comparison.csv"
+      }
+    ],
+    "shap_highlights": [
+      {
+        "scope": "SHAP explanation",
+        "subgroup": null,
+        "selected_model_display_name": "XGBoost",
+        "explained_split": "test",
+        "top_features": [
+          {
+            "feature": "t2_time",
+            "mean_abs_shap": 0.048802655
+          },
+          {
+            "feature": "t1_time",
+            "mean_abs_shap": 0.04381795
+          },
+          {
+            "feature": "error_rate_gate",
+            "mean_abs_shap": 0.042373206
+          },
+          {
+            "feature": "readout_error",
+            "mean_abs_shap": 0.037454743
+          },
+          {
+            "feature": "gate_depth",
+            "mean_abs_shap": 0.0299711
+          }
+        ],
+        "source_directory": "experiments\\model_benchmark\\20260313_221036\\shap_analysis",
+        "source_csv": "experiments\\model_benchmark\\20260313_221036\\shap_analysis\\shap_feature_importance.csv",
+        "source_metadata": "experiments\\model_benchmark\\20260313_221036\\shap_analysis\\shap_metadata.json"
+      },
+      {
+        "scope": "SHAP explanation for qubit_count = 8",
+        "subgroup": "qubit_count = 8",
+        "selected_model_display_name": "Random Forest",
+        "explained_split": "test",
+        "top_features": [
+          {
+            "feature": "readout_error",
+            "mean_abs_shap": 0.0111860889146092
+          },
+          {
+            "feature": "t2_time",
+            "mean_abs_shap": 0.0101898426069713
+          },
+          {
+            "feature": "error_rate_gate",
+            "mean_abs_shap": 0.009970035568797
+          },
+          {
+            "feature": "t1_time",
+            "mean_abs_shap": 0.0089523685799833
+          },
+          {
+            "feature": "gate_depth",
+            "mean_abs_shap": 0.0079493659958558
+          }
+        ],
+        "source_directory": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_8\\shap_analysis",
+        "source_csv": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_8\\shap_analysis\\shap_feature_importance.csv",
+        "source_metadata": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_8\\shap_analysis\\shap_metadata.json"
+      },
+      {
+        "scope": "SHAP explanation for qubit_count = 6",
+        "subgroup": "qubit_count = 6",
+        "selected_model_display_name": "XGBoost",
+        "explained_split": "test",
+        "top_features": [
+          {
+            "feature": "t1_time",
+            "mean_abs_shap": 0.12949346
+          },
+          {
+            "feature": "gate_depth",
+            "mean_abs_shap": 0.1274257
+          },
+          {
+            "feature": "readout_error",
+            "mean_abs_shap": 0.122066185
+          },
+          {
+            "feature": "t2_time",
+            "mean_abs_shap": 0.11299669
+          },
+          {
+            "feature": "error_rate_gate",
+            "mean_abs_shap": 0.11093366
+          }
+        ],
+        "source_directory": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_6\\shap_analysis",
+        "source_csv": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_6\\shap_analysis\\shap_feature_importance.csv",
+        "source_metadata": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_6\\shap_analysis\\shap_metadata.json"
+      }
+    ]
+  },
+  "main_scientific_takeaway": {
+    "plain_language_conclusion": "Leakage-free global fault classification remains weak, but qubit-count-stratified models recover stronger signal, while fidelity regression stays strong.",
+    "scientific_meaning": "The public snapshot appears to carry useful hardware and noise information, but not enough topology diversity for a single strong global fault classifier. Regime-specific models by qubit_count are therefore the more defensible scientific result.",
+    "negative_results_to_preserve": [
+      "Global leakage-free fault classification stayed near 0.51 macro-F1, so it should not be framed as a strong general classifier.",
+      "Targeted tuning improved validation scores for q=6 and q=8 but reduced held-out test macro-F1 in both subgroups."
+    ]
+  },
+  "important_caveats": [
+    "All classification claims in this report are leakage-free pre-execution claims only; post-observation columns such as fidelity and bit-error-derived fields were excluded.",
+    "The public Kaggle snapshot appears to have constant gate_types, which limits topology variation and weakens claims about gate-sequence signal.",
+    "Stratified subgroup results come from smaller per-qubit subsets than the global benchmark and should be described as regime-specific evidence.",
+    "The best validation subgroup and the strongest held-out test subgroup are different, so model selection and retrospective comparison must be kept separate in the thesis."
+  ],
+  "methodological_warnings": [
+    "Do not present a validation winner as automatically identical to the best thesis headline result.",
+    "Do not treat tuned subgroup runs as the main result here because they improved validation but hurt held-out generalization."
+  ],
+  "thesis_framing_recommendation": {
+    "headline_result": "Use qubit_count = 8 as the headline subgroup because it won under the planned validation criterion and remained strong on held-out test.",
+    "more_trustworthy_result": "Treat the untuned q=8 Random Forest subgroup winner as more trustworthy than the tuned alternatives because tuning hurt held-out generalization.",
+    "held_out_test_comparator": "Use qubit_count = 6 as the strongest held-out comparator because its untuned XGBoost model achieved the highest subgroup test macro-F1.",
+    "presentation_notes": [
+      "Present the global leakage-free result as an intentionally strict baseline that remained weak rather than as a failure to find any signal.",
+      "Contrast the weak global classification result with the strong fidelity regression baseline to show that the dataset still contains meaningful structure.",
+      "State explicitly that SHAP highlighted hardware, noise, and depth features more strongly than topology-style variation in this public snapshot."
+    ]
+  },
+  "recommended_next_steps": [
+    "Keep the untuned q=8 subgroup as the current thesis headline unless a new dataset with richer topology variation changes the ranking.",
+    "If more experiments are needed, prioritize new data with non-constant gate_types over deeper hyperparameter search.",
+    "Regenerate the milestone report after any new dataset snapshot, feature policy change, or materially new subgrouping strategy."
+  ],
+  "thesis_reuse_sentences": [
+    "Under a leakage-free pre-execution feature policy, global fault-type classification remained weak, but qubit-count-stratified models recovered stronger and more scientifically interpretable signal."
+  ],
+  "artifact_references": [
+    {
+      "label": "Global classification comparison table",
+      "path": "experiments\\model_benchmark\\20260313_221036\\model_comparison.csv"
+    },
+    {
+      "label": "Global classification feature policy",
+      "path": "experiments\\model_benchmark\\20260313_221036\\feature_policy.json"
+    },
+    {
+      "label": "Global classification split summary",
+      "path": "experiments\\model_benchmark\\20260313_221036\\split_summary.json"
+    },
+    {
+      "label": "Stratified best model by qubit count",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\best_model_by_qubit_count.csv"
+    },
+    {
+      "label": "Stratified full comparison table",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\qubit_model_comparison.csv"
+    },
+    {
+      "label": "Stratified feature policy by qubit count",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\feature_policy_by_qubit.json"
+    },
+    {
+      "label": "Stratified subset metadata by qubit count",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\subset_metadata_by_qubit.json"
+    },
+    {
+      "label": "Fidelity regression comparison table",
+      "path": "experiments\\fidelity_regression\\20260313_203701\\model_comparison.csv"
+    },
+    {
+      "label": "Tuned comparison table for qubit_count = 6",
+      "path": "experiments\\tuned_classification\\20260313_225202\\tuned_model_comparison.csv"
+    },
+    {
+      "label": "Tuned subset metadata for qubit_count = 6",
+      "path": "experiments\\tuned_classification\\20260313_225202\\subset_metadata.json"
+    },
+    {
+      "label": "Tuned comparison table for qubit_count = 8",
+      "path": "experiments\\tuned_classification\\20260313_225237\\tuned_model_comparison.csv"
+    },
+    {
+      "label": "Tuned subset metadata for qubit_count = 8",
+      "path": "experiments\\tuned_classification\\20260313_225237\\subset_metadata.json"
+    },
+    {
+      "label": "SHAP explanation feature importance",
+      "path": "experiments\\model_benchmark\\20260313_221036\\shap_analysis\\shap_feature_importance.csv"
+    },
+    {
+      "label": "SHAP explanation metadata",
+      "path": "experiments\\model_benchmark\\20260313_221036\\shap_analysis\\shap_metadata.json"
+    },
+    {
+      "label": "SHAP explanation for qubit_count = 8 feature importance",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_8\\shap_analysis\\shap_feature_importance.csv"
+    },
+    {
+      "label": "SHAP explanation for qubit_count = 8 metadata",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_8\\shap_analysis\\shap_metadata.json"
+    },
+    {
+      "label": "SHAP explanation for qubit_count = 6 feature importance",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_6\\shap_analysis\\shap_feature_importance.csv"
+    },
+    {
+      "label": "SHAP explanation for qubit_count = 6 metadata",
+      "path": "experiments\\qubit_stratified\\20260313_223849\\qubit_count_6\\shap_analysis\\shap_metadata.json"
+    },
+    {
+      "label": "Additional artifact: checklist.md",
+      "path": "checklist.md"
+    }
+  ]
+}

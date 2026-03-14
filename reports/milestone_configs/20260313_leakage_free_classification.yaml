@@ -1,0 +1,63 @@
+title: Leakage-Free Classification Milestone
+report_slug: 20260313_leakage_free_classification
+output_dir: reports/milestones
+run_group_name: 2026-03-13 leakage-free classification and regression milestone
+dataset_used: data/raw/NISQ-FaultLogs-100K.csv
+split_strategy: Single deterministic 80/15/5 train/validation/test split shared across compared models.
+experiment_scope: Global leakage-free fault classification, qubit-count-stratified classification, fidelity regression reference, SHAP interpretation, and targeted subgroup tuning.
+subgroup: qubit_count
+what_was_compared:
+  models_compared:
+    - Dummy Most Frequent
+    - Logistic Regression
+    - Random Forest
+    - XGBoost
+    - Random Forest Regressor
+    - XGBoost Regressor
+  feature_sets_compared:
+    - baseline_raw
+    - enhanced_topology
+  notes:
+    - Classification uses the leakage-free pre_execution feature policy.
+    - Regression is included as a reference result rather than the thesis headline for fault-type classification.
+artifacts:
+  global_classification_run: experiments/model_benchmark/20260313_221036
+  stratified_classification_run: experiments/qubit_stratified/20260313_223849
+  regression_run: experiments/fidelity_regression/20260313_203701
+  tuned_runs:
+    - experiments/tuned_classification/20260313_225202
+    - experiments/tuned_classification/20260313_225237
+  shap_runs:
+    - experiments/model_benchmark/20260313_221036
+    - experiments/qubit_stratified/20260313_223849/qubit_count_8
+    - experiments/qubit_stratified/20260313_223849/qubit_count_6
+  extra_artifact_paths:
+    - checklist.md
+manual_interpretation:
+  plain_language_conclusion: Leakage-free global fault classification remains weak, but qubit-count-stratified models recover stronger signal, while fidelity regression stays strong.
+  scientific_meaning: The public snapshot appears to carry useful hardware and noise information, but not enough topology diversity for a single strong global fault classifier. Regime-specific models by qubit_count are therefore the more defensible scientific result.
+  negative_results_to_preserve:
+    - Global leakage-free fault classification stayed near 0.51 macro-F1, so it should not be framed as a strong general classifier.
+    - Targeted tuning improved validation scores for q=6 and q=8 but reduced held-out test macro-F1 in both subgroups.
+  caveats:
+    - All classification claims in this report are leakage-free pre-execution claims only; post-observation columns such as fidelity and bit-error-derived fields were excluded.
+    - The public Kaggle snapshot appears to have constant gate_types, which limits topology variation and weakens claims about gate-sequence signal.
+    - Stratified subgroup results come from smaller per-qubit subsets than the global benchmark and should be described as regime-specific evidence.
+    - The best validation subgroup and the strongest held-out test subgroup are different, so model selection and retrospective comparison must be kept separate in the thesis.
+  methodological_warnings:
+    - Do not present a validation winner as automatically identical to the best thesis headline result.
+    - Do not treat tuned subgroup runs as the main result here because they improved validation but hurt held-out generalization.
+  thesis_framing:
+    headline_result: Use qubit_count = 8 as the headline subgroup because it won under the planned validation criterion and remained strong on held-out test.
+    more_trustworthy_result: Treat the untuned q=8 Random Forest subgroup winner as more trustworthy than the tuned alternatives because tuning hurt held-out generalization.
+    held_out_test_comparator: Use qubit_count = 6 as the strongest held-out comparator because its untuned XGBoost model achieved the highest subgroup test macro-F1.
+    presentation_notes:
+      - Present the global leakage-free result as an intentionally strict baseline that remained weak rather than as a failure to find any signal.
+      - Contrast the weak global classification result with the strong fidelity regression baseline to show that the dataset still contains meaningful structure.
+      - State explicitly that SHAP highlighted hardware, noise, and depth features more strongly than topology-style variation in this public snapshot.
+  recommended_next_steps:
+    - Keep the untuned q=8 subgroup as the current thesis headline unless a new dataset with richer topology variation changes the ranking.
+    - If more experiments are needed, prioritize new data with non-constant gate_types over deeper hyperparameter search.
+    - Regenerate the milestone report after any new dataset snapshot, feature policy change, or materially new subgrouping strategy.
+  thesis_reuse_sentences:
+    - Under a leakage-free pre-execution feature policy, global fault-type classification remained weak, but qubit-count-stratified models recovered stronger and more scientifically interpretable signal.

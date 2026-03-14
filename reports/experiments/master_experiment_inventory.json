@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-03-14T01:03:33",
+  "experiments_root": "experiments",
+  "output_dir": "reports/experiments",
+  "total_rows": 173,
+  "total_runs": 18,
+  "run_counts_by_family": {
+    "classification_global": 7,
+    "classification_stratified": 3,
+    "classification_tuned": 3,
+    "fidelity_regression": 1,
+    "rf_baseline_single_model": 4
+  },
+  "datasets": [
+    "NISQ-FaultLogs-100K.csv"
+  ],
+  "feature_sets": [
+    "baseline_raw",
+    "enhanced_topology",
+    "topology_aware"
+  ],
+  "prediction_contexts": [
+    "pre_execution"
+  ]
+}

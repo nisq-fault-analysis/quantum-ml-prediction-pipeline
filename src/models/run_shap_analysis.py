@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +22,7 @@ from src.models.classification_features import (
     build_classification_features,
 )
 from src.models.splitting import split_dataset
+from src.models.subset_filters import filter_frame_from_saved_metadata
 from src.visualization.plots import plot_feature_importance
 
 
@@ -63,24 +63,6 @@ def _split_name_to_frame(split, split_name: str) -> pd.DataFrame:
     if split_name == "test":
         return split.X_test
     raise ValueError(f"Unsupported split name: {split_name}")
-
-
-def _apply_subset_filter(
-    feature_frame: pd.DataFrame, run_path: Path
-) -> tuple[pd.DataFrame, dict[str, Any] | None]:
-    subset_metadata_path = run_path / "subset_metadata.json"
-    if not subset_metadata_path.exists():
-        return feature_frame, None
-
-    subset_metadata = json.loads(subset_metadata_path.read_text(encoding="utf-8"))
-    filter_column = str(subset_metadata["filter_column"])
-    filter_value = subset_metadata["filter_value"]
-    filtered_frame = feature_frame.loc[feature_frame[filter_column] == filter_value].copy()
-    if filtered_frame.empty:
-        raise ValueError(
-            f"Subset filter {filter_column} == {filter_value!r} produced no rows for {run_path}"
-        )
-    return filtered_frame, subset_metadata
 
 
 def _build_explainer(
@@ -131,7 +113,7 @@ def run_shap_analysis(run_directory: str | Path, split_name: str = "test") -> No
     feature_path, config = _select_feature_path(run_config_path)
     feature_frame = read_tabular_file(feature_path, file_format="auto")
     validate_required_columns(feature_frame, [config.data.id_column, config.data.label_column])
-    feature_frame, subset_metadata = _apply_subset_filter(feature_frame, run_path)
+    feature_frame, subset_metadata = filter_frame_from_saved_metadata(feature_frame, run_path)
     X, labels = build_classification_features(feature_frame, config)
     split = split_dataset(X, labels, config)
 

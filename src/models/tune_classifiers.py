@@ -29,6 +29,7 @@ from src.models.classification_features import (
 )
 from src.models.random_forest import save_model_artifact
 from src.models.splitting import build_split_summary, split_dataset
+from src.models.subset_filters import filter_frame_by_subset
 from src.visualization.plots import plot_confusion_matrix, plot_feature_importance
 
 CLASSIFIER_DISPLAY_NAMES = {
@@ -195,7 +196,12 @@ def _build_feature_importance_frame(pipeline: Pipeline, model_name: str) -> pd.D
     return importance_frame.sort_values(by="importance", ascending=False).reset_index(drop=True)
 
 
-def tune_models(config_path: str | Path) -> None:
+def tune_models(
+    config_path: str | Path,
+    *,
+    subset_column: str | None = None,
+    subset_value: str | None = None,
+) -> None:
     feature_path, config = _select_feature_path(config_path)
     ensure_project_directories(config)
     run_directory = build_run_directory(config)
@@ -204,6 +210,14 @@ def tune_models(config_path: str | Path) -> None:
 
     feature_frame = read_tabular_file(feature_path, file_format="auto")
     validate_required_columns(feature_frame, [config.data.id_column, config.data.label_column])
+    feature_frame, subset_metadata = filter_frame_by_subset(
+        feature_frame,
+        subset_column=subset_column,
+        subset_value=subset_value,
+        label_column=config.data.label_column,
+    )
+    if subset_metadata is not None:
+        save_json_report(subset_metadata, run_directory / "subset_metadata.json")
 
     X, labels = build_classification_features(feature_frame, config)
     save_json_report(
@@ -329,12 +343,28 @@ def parse_args() -> argparse.Namespace:
         default=Path("experiments/configs/tuned_classification.yaml"),
         help="Path to the YAML experiment configuration.",
     )
+    parser.add_argument(
+        "--subset-column",
+        type=str,
+        default=None,
+        help="Optional column name used to filter the feature table before tuning.",
+    )
+    parser.add_argument(
+        "--subset-value",
+        type=str,
+        default=None,
+        help="Optional scalar value used with --subset-column to tune a single subgroup.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    tune_models(config_path=args.config)
+    tune_models(
+        config_path=args.config,
+        subset_column=args.subset_column,
+        subset_value=args.subset_value,
+    )
 
 
 if __name__ == "__main__":
