@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 ReleaseAblationMode = Literal[
     "raw_only",
@@ -253,6 +253,54 @@ class OutputConfig(BaseModel):
     figures_dir: Path = Path("reports/figures/rf_baseline")
 
 
+_NISQ_TARGET_COLUMNS = (
+    "reliability",
+    "fidelity",
+    "error_rate",
+    "algorithmic_success_probability",
+    "exact_output_success_rate",
+)
+
+
+class NISQReliabilityConfig(BaseModel):
+    """Configuration for the NISQ reliability dataset loader.
+
+    The dataset is delivered as three pre-split parquet files plus two JSON
+    sidecar files (split_manifest.json, feature_manifest.json).  Column lists
+    are read from feature_manifest.json at load time; nothing is hardcoded.
+
+    Parameters
+    ----------
+    dataset_dir:
+        Directory that contains train.parquet, validation.parquet,
+        test.parquet, split_manifest.json, and feature_manifest.json.
+    target_column:
+        Regression target exposed as ``y``.  Defaults to ``"reliability"``.
+        Must be one of the five recognised target columns.
+    group_column:
+        Column used to verify that no group leaks across splits.  The value
+        from split_manifest.json takes precedence when present.
+    drop_payload_columns:
+        Drop raw JSON payload columns (counts_json, ideal_distribution_json,
+        compiler_metadata_json) before returning data.
+    """
+
+    dataset_dir: Path = Path("data/nisq_reliability")
+    target_column: str = "reliability"
+    group_column: str = "base_circuit_id"
+    drop_payload_columns: bool = True
+
+    @field_validator("target_column")
+    @classmethod
+    def _validate_target_column(cls, value: str) -> str:
+        if value not in _NISQ_TARGET_COLUMNS:
+            raise ValueError(
+                f"target_column must be one of {list(_NISQ_TARGET_COLUMNS)}, "
+                f"got {value!r}"
+            )
+        return value
+
+
 class ProjectConfig(BaseModel):
     """Top-level configuration shared by all CLI entry points."""
 
@@ -260,3 +308,4 @@ class ProjectConfig(BaseModel):
     features: FeatureConfig = Field(default_factory=FeatureConfig)
     training: TrainingConfig = Field(default_factory=TrainingConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
+    nisq_reliability: NISQReliabilityConfig | None = None

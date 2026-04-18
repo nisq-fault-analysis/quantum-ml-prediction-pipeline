@@ -1,0 +1,54 @@
+# NISQ Reliability Dataset — loader configuration
+#
+# This config wires the ML pipeline to the pre-split parquet dataset produced
+# by the dataset-generator companion repo (nisq-fault-analysis/dataset-generator).
+#
+# The dataset is a supervised regression problem: predict post-execution quantum
+# circuit reliability from pre-execution structural and hardware-calibration
+# features.
+#
+# Critical: the dataset is already split by base_circuit_id group.  Never
+# re-split at the row level — doing so leaks compiler-variant pairs across
+# train/test boundaries and inflates held-out metrics.
+#
+# Usage:
+#   from src.config.io import load_config
+#   from src.data.nisq_dataset import load_nisq_splits, check_split_integrity, NISQDatasetConfig
+#
+#   cfg = load_config("experiments/configs/nisq_reliability.yaml")
+#   ds_cfg = NISQDatasetConfig.from_dict(cfg.nisq_reliability.model_dump())
+#   splits = load_nisq_splits(ds_cfg)
+#   check_split_integrity(splits, group_column=ds_cfg.group_column)
+
+nisq_reliability:
+  # Path to the directory containing the three parquet files and both JSON
+  # sidecar files.  Adjust to wherever the dataset-generator deposited its
+  # output (absolute or relative to the project root).
+  dataset_dir: data/nisq_reliability
+
+  # Primary regression target exposed as y.
+  # Options: reliability | fidelity | error_rate |
+  #          algorithmic_success_probability | exact_output_success_rate
+  target_column: reliability
+
+  # Column used to verify that no circuit group leaks across splits.
+  # Overridden by the value in split_manifest.json when present.
+  group_column: base_circuit_id
+
+  # Drop raw JSON payload columns (counts_json, ideal_distribution_json,
+  # compiler_metadata_json) — they must never be passed to a model.
+  drop_payload_columns: true
+
+# The keys below are required by ProjectConfig but are not used by the NISQ
+# reliability loader.  They are included here to satisfy schema validation so
+# that load_config() succeeds without a separate config file.
+
+data:
+  dataset_path: data/raw/NISQ-FaultLogs-100K.csv
+  cleaned_dataset_path: data/interim/nisq_fault_logs_cleaned.parquet
+  invalid_rows_path: data/interim/nisq_fault_logs_invalid_rows.csv
+  validation_report_path: data/interim/nisq_fault_logs_validation_report.json
+
+output:
+  experiment_root: experiments/nisq_reliability
+  figures_dir: reports/figures/nisq_reliability
