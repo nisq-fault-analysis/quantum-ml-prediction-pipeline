@@ -138,14 +138,10 @@ def _scan_model_benchmark_runs(run_root: Path) -> list[dict[str, Any]]:
                     "model_name": str(row["model_name"]),
                     "model_display_name": str(row["model_display_name"]),
                     "validation_macro_f1": (
-                        float(row["validation_macro_f1"])
-                        if has_validation_metrics
-                        else None
+                        float(row["validation_macro_f1"]) if has_validation_metrics else None
                     ),
                     "validation_accuracy": (
-                        float(row["validation_accuracy"])
-                        if has_validation_metrics
-                        else None
+                        float(row["validation_accuracy"]) if has_validation_metrics else None
                     ),
                     "test_macro_f1": (
                         float(row["test_macro_f1"])
@@ -195,8 +191,7 @@ def _scan_qubit_stratified_runs(run_root: Path) -> list[dict[str, Any]]:
             )
             .groupby("qubit_count")
             .head(1)
-            .index
-            .tolist()
+            .index.tolist()
         )
         best_test_indices = set(
             comparison_frame.sort_values(
@@ -205,8 +200,7 @@ def _scan_qubit_stratified_runs(run_root: Path) -> list[dict[str, Any]]:
             )
             .groupby("qubit_count")
             .head(1)
-            .index
-            .tolist()
+            .index.tolist()
         )
 
         for row_index, row in comparison_frame.iterrows():
@@ -249,7 +243,12 @@ def _scan_qubit_stratified_runs(run_root: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def _scan_regression_runs(run_root: Path) -> list[dict[str, Any]]:
+def _scan_regression_runs(
+    run_root: Path,
+    *,
+    family: str = "fidelity_regression",
+    target_kind: str = "fidelity_regression",
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if not run_root.exists():
         return rows
@@ -275,12 +274,12 @@ def _scan_regression_runs(run_root: Path) -> list[dict[str, Any]]:
             rows.append(
                 {
                     **_base_row(
-                        family="fidelity_regression",
+                        family=family,
                         run_root=run_root,
                         run_dir=run_dir,
                         source_table=comparison_path,
                         config=config,
-                        target_kind="fidelity_regression",
+                        target_kind=target_kind,
                         selection_scope="run",
                         tuning_applied=False,
                     ),
@@ -383,9 +382,7 @@ def _scan_rf_baseline_runs(run_root: Path) -> list[dict[str, Any]]:
         config = load_config(run_config_path)
         metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
         model_name = (
-            config.training.model_names[0]
-            if config.training.model_names
-            else "random_forest"
+            config.training.model_names[0] if config.training.model_names else "random_forest"
         )
         legacy_test_metrics = metrics
         validation_metrics = metrics.get("validation_metrics", {})
@@ -445,6 +442,11 @@ def build_experiment_matrix(experiments_root: str | Path = Path("experiments")) 
         *_scan_model_benchmark_runs(root / "model_benchmark"),
         *_scan_qubit_stratified_runs(root / "qubit_stratified"),
         *_scan_regression_runs(root / "fidelity_regression"),
+        *_scan_regression_runs(
+            root / "reliability_baseline",
+            family="reliability_regression",
+            target_kind="reliability_regression",
+        ),
         *_scan_tuned_runs(root / "tuned_classification"),
     ]
     if not rows:

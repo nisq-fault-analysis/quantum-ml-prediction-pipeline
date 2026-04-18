@@ -1,0 +1,6 @@
+split_name,ablation_name,model_name,slice_name,slice_value,sample_count,mae,rmse,r2
+test,transpiled_only,xgboost_regressor,family,mixed_random,781,0.15350053469899674,0.20265688723706185,0.4419971586909345
+test,transpiled_only,xgboost_regressor,family,decoherence_sensitive,1172,0.11733936280673274,0.15718575439733834,0.7019541979233171
+test,transpiled_only,xgboost_regressor,family,qft_lite,1142,0.06264736491619184,0.09811807476129038,0.8452183578577614
+test,transpiled_only,xgboost_regressor,family,measurement_sensitive,1070,0.06137608046008047,0.0935102339611888,0.8998144677682334
+test,transpiled_only,xgboost_regressor,qubit_count,3,2763,0.06054088851916285,0.10019041664620609,0.565398018893651

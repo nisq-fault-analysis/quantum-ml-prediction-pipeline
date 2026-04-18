@@ -127,6 +127,32 @@ def test_write_experiment_summary_collects_standard_run_families(tmp_path: Path)
         ]
     ).to_csv(regression_run / "model_comparison.csv", index=False)
 
+    reliability_run = experiments_root / "reliability_baseline" / "run_f"
+    _write_yaml(
+        reliability_run / "run_config.yaml",
+        {
+            "data": {"dataset_path": "data/raw/dataset_a.csv"},
+            "training": {
+                "feature_set_name": "topology_aware",
+                "prediction_context": "pre_execution",
+            },
+        },
+    )
+    pd.DataFrame(
+        [
+            {
+                "model_name": "random_forest_regressor",
+                "model_display_name": "Random Forest Regressor",
+                "validation_r2": 0.88,
+                "validation_mae": 0.07,
+                "test_r2": 0.87,
+                "test_mae": 0.08,
+                "validation_feature_columns_before_encoding": 9,
+                "test_feature_columns_before_encoding": 9,
+            }
+        ]
+    ).to_csv(reliability_run / "model_comparison.csv", index=False)
+
     tuned_run = experiments_root / "tuned_classification" / "run_d"
     _write_yaml(
         tuned_run / "run_config.yaml",
@@ -192,23 +218,24 @@ def test_write_experiment_summary_collects_standard_run_families(tmp_path: Path)
         "classification_stratified",
         "classification_tuned",
         "fidelity_regression",
+        "reliability_regression",
         "rf_baseline_single_model",
     }
-    assert len(matrix) == 7
-    assert inventory["total_rows"] == 7
-    assert inventory["total_runs"] == 5
+    assert len(matrix) == 8
+    assert inventory["total_rows"] == 8
+    assert inventory["total_runs"] == 6
     assert inventory["datasets"] == ["dataset_a.csv"]
     assert (
-        matrix.loc[matrix["experiment_family"] == "classification_global", "is_best_test_in_scope"]
-        .sum()
+        matrix.loc[
+            matrix["experiment_family"] == "classification_global", "is_best_test_in_scope"
+        ].sum()
         == 1
     )
     assert (
         matrix.loc[
             matrix["experiment_family"] == "classification_stratified",
             "is_best_test_in_scope",
-        ]
-        .sum()
+        ].sum()
         == 1
     )
     tuned_row = matrix.loc[matrix["experiment_family"] == "classification_tuned"].iloc[0]

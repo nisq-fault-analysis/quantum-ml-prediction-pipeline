@@ -1,0 +1,6 @@
+split_name,ablation_name,model_name,slice_name,slice_value,sample_count,mae,rmse,r2
+test,raw_only,random_forest_regressor,family,qaoa_like,1380,0.0401926748623395,0.05124146464971213,0.9271307251681905
+test,raw_only,random_forest_regressor,family,entanglement_heavy,1256,0.038508021634156724,0.04906494919521796,0.9368854050625522
+test,raw_only,random_forest_regressor,family,trotter_ising,1378,0.0362819841429471,0.048443221635486984,0.8702784356152397
+test,raw_only,random_forest_regressor,family,mixed_random,781,0.03360418488045884,0.04417142532206403,0.64407869386593
+test,raw_only,random_forest_regressor,qubit_count,6,2282,0.03305443199865979,0.0455239256822871,0.9094226431663868

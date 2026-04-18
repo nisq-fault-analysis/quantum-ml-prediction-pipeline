@@ -1,0 +1,32 @@
+{
+  "dataset_path": "data\\processed\\thesis_production_125k\\thesis_production_125k.parquet",
+  "dataset_id": "thesis_production_125k_v1",
+  "profile_name": "thesis_production_125k",
+  "schema_version": "1.3.0",
+  "profile_hash_sha256": "c858df2d593abbf59e3f57fc05bd153bfb88480a3d46e9feecb447b2a4008ec3",
+  "split_ratios": {
+    "train": 0.8,
+    "validation": 0.1,
+    "test": 0.1
+  },
+  "group_columns": [
+    "base_circuit_id"
+  ],
+  "seed": 0,
+  "row_counts": {
+    "train": 200000,
+    "validation": 25000,
+    "test": 25000
+  },
+  "files": {
+    "train": "data\\processed\\thesis_production_125k\\release\\splits\\train.parquet",
+    "validation": "data\\processed\\thesis_production_125k\\release\\splits\\validation.parquet",
+    "test": "data\\processed\\thesis_production_125k\\release\\splits\\test.parquet"
+  },
+  "feature_manifest_path": "data\\processed\\thesis_production_125k\\release\\splits\\feature_manifest.json",
+  "twin_leakage_check": {
+    "passed": true,
+    "errors": [],
+    "unique_groups": 125000
+  }
+}

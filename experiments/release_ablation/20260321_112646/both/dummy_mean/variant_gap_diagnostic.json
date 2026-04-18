@@ -1,0 +1,22 @@
+{
+  "available": true,
+  "variant_metrics": [
+    {
+      "compiler_variant": "raw",
+      "mae": 0.11681614820937501,
+      "rmse": 0.14178434477943416,
+      "r2": -0.10112513180533256
+    },
+    {
+      "compiler_variant": "transpiled",
+      "mae": 0.16656717975,
+      "rmse": 0.21961115658734695,
+      "r2": -0.034119542841627215
+    }
+  ],
+  "delta_mae_transpiled_minus_raw": 0.049751031540624976,
+  "delta_r2_transpiled_minus_raw": 0.06700558896370534,
+  "sharp_difference_flag": true,
+  "ablation_name": "both",
+  "model_name": "dummy_mean"
+}

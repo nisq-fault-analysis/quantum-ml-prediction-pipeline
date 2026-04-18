@@ -1,0 +1,19 @@
+{
+  "leakage_risks_found": [
+    "Legacy release training regenerated splits internally instead of relying on grouped `base_circuit_id` boundaries.",
+    "Legacy hyperparameter tuning in the broader repository used standard splits rather than grouped folds.",
+    "Variant-specific local hardware features were null on raw rows without an explicit ablation protocol to test whether they genuinely helped."
+  ],
+  "fixes_applied": [
+    "Packaged release experiments now validate disjoint `base_circuit_id` groups across train, validation, and test.",
+    "All imputers, encoders, scalers, and estimators live inside one sklearn Pipeline fit only on training data or grouped CV training folds.",
+    "Grouped CV is now used for hyperparameter tuning on the training split.",
+    "Ablation modes now separate raw-only, transpiled-only, mixed without variant info, mixed with compiler variant, and mixed with compiler variant plus local features.",
+    "Evaluation now reports global and sliced metrics with sample counts and stores exact split membership as an artifact."
+  ],
+  "remaining_methodological_caveats": [
+    "The dataset remains simulator-generated rather than collected from live hardware.",
+    "Outer train/validation/test partitions come from the supplied manifest rather than being regenerated here, so robustness to alternative grouped outer splits still requires additional reruns.",
+    "Permutation importance is computed on a bounded evaluation sample for practicality, so the ranking is approximate rather than exhaustive."
+  ]
+}

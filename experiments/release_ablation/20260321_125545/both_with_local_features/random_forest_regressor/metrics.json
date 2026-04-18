@@ -1,0 +1,29 @@
+{
+  "ablation_name": "both_with_local_features",
+  "model_name": "random_forest_regressor",
+  "model_display_name": "Random Forest Regressor",
+  "best_params": {
+    "max_depth": 12,
+    "min_samples_leaf": 2
+  },
+  "validation_metrics": {
+    "mae": 0.040492930607534595,
+    "rmse": 0.07154871724876306,
+    "r2": 0.8559630550613548,
+    "train_rows": 200000,
+    "validation_rows": 25000,
+    "test_rows": 25000,
+    "feature_columns_before_encoding": 45,
+    "cv_best_r2": 0.8571804872925779
+  },
+  "test_metrics": {
+    "mae": 0.039550566835429776,
+    "rmse": 0.0695259011895953,
+    "r2": 0.8585085852708045,
+    "train_rows": 200000,
+    "validation_rows": 25000,
+    "test_rows": 25000,
+    "feature_columns_before_encoding": 45,
+    "cv_best_r2": 0.8571804872925779
+  }
+}

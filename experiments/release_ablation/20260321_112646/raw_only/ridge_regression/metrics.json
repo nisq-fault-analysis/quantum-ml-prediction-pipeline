@@ -1,0 +1,28 @@
+{
+  "ablation_name": "raw_only",
+  "model_name": "ridge_regression",
+  "model_display_name": "Ridge Regression",
+  "best_params": {
+    "alpha": 0.1
+  },
+  "validation_metrics": {
+    "mae": 0.047851204240003935,
+    "rmse": 0.06248948670256604,
+    "r2": 0.7960916156964123,
+    "train_rows": 100000,
+    "validation_rows": 12500,
+    "test_rows": 12500,
+    "feature_columns_before_encoding": 37,
+    "cv_best_r2": 0.7940865400975853
+  },
+  "test_metrics": {
+    "mae": 0.047597272851926276,
+    "rmse": 0.061751148524814344,
+    "r2": 0.7911328249117655,
+    "train_rows": 100000,
+    "validation_rows": 12500,
+    "test_rows": 12500,
+    "feature_columns_before_encoding": 37,
+    "cv_best_r2": 0.7940865400975853
+  }
+}

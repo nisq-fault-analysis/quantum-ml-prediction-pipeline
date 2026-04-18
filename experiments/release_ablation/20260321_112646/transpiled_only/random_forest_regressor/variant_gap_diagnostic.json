@@ -1,0 +1,13 @@
+{
+  "available": true,
+  "variant_metrics": [
+    {
+      "compiler_variant": "transpiled",
+      "mae": 0.04985682605242319,
+      "rmse": 0.08852504143486187,
+      "r2": 0.8319671379731601
+    }
+  ],
+  "ablation_name": "transpiled_only",
+  "model_name": "random_forest_regressor"
+}

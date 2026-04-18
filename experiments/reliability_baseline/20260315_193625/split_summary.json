@@ -1,0 +1,9 @@
+{
+  "total_rows": 99967,
+  "train_rows": 79973,
+  "validation_rows": 14995,
+  "test_rows": 4999,
+  "train_fraction": 0.799994,
+  "validation_fraction": 0.149999,
+  "test_fraction": 0.050007
+}

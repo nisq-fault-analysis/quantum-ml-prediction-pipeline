@@ -1,0 +1,19 @@
+{
+  "target_name": "reliability",
+  "target_definition": "1 - (bit_errors / qubit_count)",
+  "target_bounds": [
+    0.0,
+    1.0
+  ],
+  "bit_error_source_columns": {
+    "observed": "bitstring_aligned",
+    "ideal": "ideal_bitstring_aligned"
+  },
+  "row_count": 99967,
+  "bit_errors_min": 0,
+  "bit_errors_max": 14,
+  "reliability_min": 0.0,
+  "reliability_max": 1.0,
+  "reliability_mean": 0.5359428501792982,
+  "reliability_median": 0.5384615384615384
+}

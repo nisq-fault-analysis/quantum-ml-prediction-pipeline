@@ -1,0 +1,13 @@
+{
+  "available": true,
+  "variant_metrics": [
+    {
+      "compiler_variant": "transpiled",
+      "mae": 0.0920557353765922,
+      "rmse": 0.13160230512065527,
+      "r2": 0.6286452871471735
+    }
+  ],
+  "ablation_name": "transpiled_only",
+  "model_name": "ridge_regression"
+}

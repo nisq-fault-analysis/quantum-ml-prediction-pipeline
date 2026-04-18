@@ -1,0 +1,24 @@
+{
+  "model_name": "dummy_mean",
+  "model_display_name": "Dummy Mean",
+  "validation_metrics": {
+    "mae": 0.14102931622489784,
+    "rmse": 0.17685552146498906,
+    "r2": -0.00023655910477904385,
+    "train_rows": 79973,
+    "validation_rows": 14995,
+    "test_rows": 4999,
+    "feature_columns_before_encoding": 9,
+    "training_seconds": 0.021
+  },
+  "test_metrics": {
+    "mae": 0.1421088839767786,
+    "rmse": 0.1776496553078221,
+    "r2": -0.0001681222529268389,
+    "train_rows": 79973,
+    "validation_rows": 14995,
+    "test_rows": 4999,
+    "feature_columns_before_encoding": 9,
+    "training_seconds": 0.021
+  }
+}

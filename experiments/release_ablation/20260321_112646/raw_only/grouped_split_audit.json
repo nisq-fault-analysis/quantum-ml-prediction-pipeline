@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "group_column": "base_circuit_id",
+  "row_id_columns": [
+    "circuit_id",
+    "compiler_variant"
+  ],
+  "split_row_counts": {
+    "train": 100000,
+    "validation": 12500,
+    "test": 12500
+  },
+  "split_group_counts": {
+    "train": 100000,
+    "validation": 12500,
+    "test": 12500
+  },
+  "overlapping_groups": {
+    "train__validation": [],
+    "train__test": [],
+    "validation__test": []
+  },
+  "duplicate_row_ids_within_split": {
+    "train": 0,
+    "validation": 0,
+    "test": 0
+  }
+}

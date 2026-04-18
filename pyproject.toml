@@ -12,6 +12,7 @@ authors = [{ name = "TODO: Your Name" }]
 dependencies = [
   "joblib>=1.4.0",
   "matplotlib>=3.9.0",
+  "mlflow>=2.20.0",
   "numpy>=1.26.0",
   "pandas>=2.2.0",
   "pyarrow>=17.0.0",
@@ -40,11 +41,15 @@ qfc-build-features = "src.features.build_features:main"
 qfc-eda = "src.data.run_eda:main"
 qfc-prepare-data = "src.data.prepare_data:main"
 qfc-train-fidelity-regression = "src.models.train_fidelity_regression:main"
+qfc-train-reliability-regression = "src.models.train_reliability_regression:main"
 qfc-train-model-suite = "src.models.train_model_suite:main"
 qfc-train-qubit-stratified = "src.models.train_qubit_stratified_suite:main"
+qfc-train-release-ablation = "src.models.train_release_ablation:main"
+qfc-train-release-regression = "src.models.train_release_regression:main"
 qfc-train-rf-baseline = "src.models.train_rf_baseline:main"
 qfc-tune-classifiers = "src.models.tune_classifiers:main"
 qfc-run-shap-analysis = "src.models.run_shap_analysis:main"
+qfc-evaluate-release-regression = "src.models.evaluate_release_regression:main"
 qfc-generate-milestone-report = "src.reporting.generate_milestone_report:main"
 qfc-build-experiment-summary = "src.reporting.build_experiment_summary:main"
 

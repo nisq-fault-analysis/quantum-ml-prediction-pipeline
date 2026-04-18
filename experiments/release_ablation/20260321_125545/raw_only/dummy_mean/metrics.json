@@ -1,0 +1,26 @@
+{
+  "ablation_name": "raw_only",
+  "model_name": "dummy_mean",
+  "model_display_name": "Dummy Mean",
+  "best_params": {},
+  "validation_metrics": {
+    "mae": 0.10567117443437499,
+    "rmse": 0.1383855342992839,
+    "r2": -5.891310098204983e-06,
+    "train_rows": 100000,
+    "validation_rows": 12500,
+    "test_rows": 12500,
+    "feature_columns_before_encoding": 37,
+    "cv_best_r2": -1.1347220891429663e-05
+  },
+  "test_metrics": {
+    "mae": 0.10417718738281248,
+    "rmse": 0.13512545513605365,
+    "r2": -0.00012539148946144607,
+    "train_rows": 100000,
+    "validation_rows": 12500,
+    "test_rows": 12500,
+    "feature_columns_before_encoding": 37,
+    "cv_best_r2": -1.1347220891429663e-05
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "prediction_context": "pre_execution",
+  "target_name": "reliability",
+  "target_definition": "1 - (bit_errors / qubit_count)",
+  "selected_feature_set": "topology_aware",
+  "allowed_raw_feature_columns": [
+    "qubit_count",
+    "gate_depth",
+    "error_rate_gate",
+    "t1_time",
+    "t2_time",
+    "readout_error",
+    "device_type"
+  ],
+  "allowed_engineered_feature_columns": [
+    "num_cx",
+    "two_qubit_ratio",
+    "unique_gates",
+    "cx_density",
+    "t2_t1_ratio"
+  ],
+  "forbidden_feature_columns": [
+    "bitstring",
+    "ideal_bitstring",
+    "bitstring_aligned",
+    "ideal_bitstring_aligned",
+    "fidelity",
+    "bit_errors",
+    "observed_error_rate",
+    "fidelity_loss",
+    "bit_error_density",
+    "reliability"
+  ],
+  "forbidden_column_reasons": {
+    "fidelity": "post-observation quality metric and therefore leakage",
+    "bit_errors": "target-construction intermediate derived from observed outputs",
+    "observed_error_rate": "derived from observed outputs and therefore leakage"
+  },
+  "allowed_columns_present_in_feature_table": [
+    "qubit_count",
+    "gate_depth",
+    "error_rate_gate",
+    "t1_time",
+    "t2_time",
+    "readout_error",
+    "device_type",
+    "num_cx",
+    "two_qubit_ratio",
+    "unique_gates",
+    "cx_density",
+    "t2_t1_ratio"
+  ],
+  "missing_allowed_columns": [],
+  "dropped_zero_variance_columns": [
+    "num_cx",
+    "two_qubit_ratio",
+    "unique_gates"
+  ],
+  "excluded_non_allowed_columns_present_in_feature_table": [
+    "shots"
+  ],
+  "used_feature_columns": [
+    "qubit_count",
+    "gate_depth",
+    "error_rate_gate",
+    "t1_time",
+    "t2_time",
+    "readout_error",
+    "device_type",
+    "cx_density",
+    "t2_t1_ratio"
+  ],
+  "used_feature_column_count": 9
+}

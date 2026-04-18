@@ -1,0 +1,67 @@
+# Grouped thesis ablation configuration for the packaged 125k release dataset.
+#
+# This runner keeps the packaged train/validation/test split, validates that
+# `base_circuit_id` never crosses split boundaries, tunes models with grouped
+# CV on the training split only, and compares raw/transpiled ablations.
+
+data:
+  dataset_path: data/raw/thesis_production_125k/thesis_production_125k.parquet
+  split_manifest_path: data/raw/thesis_production_125k/release/splits/split_manifest.json
+  feature_manifest_path: data/raw/thesis_production_125k/release/splits/feature_manifest.json
+  file_format: auto
+
+training:
+  target_column: reliability
+  group_column: base_circuit_id
+  regression_model_names:
+    - dummy_mean
+    - ridge_regression
+    - random_forest_regressor
+    - xgboost_regressor
+  ablation_modes:
+    - raw_only
+    - transpiled_only
+    - both
+    - both_without_local_features
+    - both_with_local_features
+  excluded_feature_columns:
+    - fidelity
+    - fidelity_loss
+    - bit_errors
+    - observed_error_rate
+    - bit_error_density
+    - timestamp
+    - exact_match_probability
+    - mitigated_reliability
+    - mitigation_gain
+    - noise_regime
+    - noise_dominant_channel
+  grouped_cv_splits: 3
+  grid_search_verbose: 2
+  tune_hyperparameters: true
+  difficulty_reference_column: original_circuit_depth
+  difficulty_bucket_count: 4
+  permutation_importance_repeats: 8
+  permutation_importance_max_rows: 5000
+  enable_shap: true
+  shap_explained_split: test
+  shap_max_rows: 1000
+  shap_background_max_rows: 500
+  enable_mlflow: false
+  mlflow_experiment_name: quantum-fault-classifier-release
+  n_estimators: 200
+  max_depth: 12
+  min_samples_split: 2
+  min_samples_leaf: 2
+  ridge_alpha: 1.0
+  xgboost_n_estimators: 300
+  xgboost_max_depth: 6
+  xgboost_learning_rate: 0.05
+  xgboost_subsample: 0.8
+  xgboost_colsample_bytree: 0.8
+  xgboost_reg_lambda: 1.0
+
+output:
+  experiment_root: experiments/release_ablation
+  run_name:
+  figures_dir: reports/figures/release_ablation

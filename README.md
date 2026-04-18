@@ -10,6 +10,7 @@ This repository turns a raw Kaggle dataset of simulated NISQ circuit fault logs 
 - reproducible feature tables
 - a comparable suite of baseline classifiers
 - fidelity regression baselines
+- leakage-free reliability regression baselines
 - qubit-count-stratified benchmark tables
 - evaluation artifacts for thesis chapters, papers, and figures
 
@@ -86,6 +87,7 @@ The training pipeline:
 The repository also supports:
 
 - fidelity regression with `DummyRegressor`, `RandomForestRegressor`, and `XGBoostRegressor`
+- leakage-free reliability regression with `DummyRegressor`, `RandomForestRegressor`, and `XGBoostRegressor`
 - qubit-count-stratified classification comparisons
 - lightweight validation-driven tuning for Random Forest and XGBoost
 - durable milestone reports that preserve raw results, interpretation, caveats, and thesis framing
@@ -196,6 +198,8 @@ make build-features
 make train-model-suite
 make train-rf-baseline
 make train-fidelity-regression
+make train-reliability-regression
+make train-release-ablation
 make train-qubit-stratified
 make tune-classifiers
 make build-experiment-summary
@@ -217,7 +221,112 @@ This writes:
 
 The matrix is a row-per-model summary across the standard experiment roots, including
 global classification, qubit-stratified classification, tuned subgroup reruns, fidelity
-regression, and the legacy single-model RF baseline.
+regression, leakage-free reliability regression, and the legacy single-model RF baseline.
+
+## Leakage-Free Reliability Regression
+
+The repository also includes a separate regression task that predicts a bounded
+pre-run reliability score:
+
+`reliability = 1 - (bit_errors / qubit_count)`
+
+This target is built from observed versus ideal bitstrings, but those outcome columns
+are used only to define the target. They are not allowed into the model inputs.
+
+The allowed inputs are the thesis-friendly pre-execution circuit and device features:
+
+- `qubit_count`
+- `gate_depth`
+- `error_rate_gate`
+- `t1_time`
+- `t2_time`
+- `readout_error`
+- `device_type`
+- `num_cx`
+- `two_qubit_ratio`
+- `unique_gates`
+- `cx_density`
+- `t2_t1_ratio`
+
+Run it with:
+
+```powershell
+.venv\Scripts\python.exe -m src.models.train_reliability_regression --config experiments/configs/reliability_regression.yaml
+```
+
+## Packaged Release Pipeline
+
+The packaged thesis dataset `thesis_production_125k_v1` uses a stricter pipeline than the
+legacy Kaggle baseline.
+
+What is different:
+
+- train, validation, and test come from the packaged `split_manifest.json`
+- split integrity is revalidated locally so `base_circuit_id` never crosses splits
+- hyperparameter tuning uses grouped CV on the training split only
+- imputers, encoders, scalers, and models all live inside one sklearn `Pipeline`
+- regression evaluation is reported globally and sliced by `family`, `qubit_count`,
+  `compiler_variant`, and a train-derived `difficulty_bucket`
+- exact split membership is saved as an artifact for reproducibility
+
+How leakage is prevented:
+
+- the release runner reads the shipped grouped split instead of resplitting rows naively
+- target columns and other outcome-derived columns are excluded explicitly before fitting
+- preprocessing is fit only on training rows, or on grouped CV training folds during tuning
+- `base_circuit_id` overlap across splits raises an error before training begins
+
+How raw and transpiled null local features are handled:
+
+- `compiler_variant` is treated as an explicit optional feature in mixed-data ablations
+- local mapping-aware features are imputed inside the training pipeline with train-only medians
+- no missing-indicator features are added, so null patterns are not turned into hidden flags
+- the ablation suite compares mixed-data runs with and without local features to show whether
+  they help beyond simple variant identity
+
+Run the grouped release ablation study with:
+
+```powershell
+.venv\Scripts\python.exe -m src.models.train_release_ablation --config experiments/configs/release_reliability_125k_ablation.yaml
+```
+
+or:
+
+```bash
+make train-release-ablation
+```
+
+Live progress is written to the console and to `experiments/release_ablation/<run_name>/training.log`.
+Set `training.grid_search_verbose` in the config if you want quieter or noisier grouped-CV updates.
+SHAP artifacts are also written per model under `.../<ablation>/<model>/shap_analysis/`.
+
+Refresh sliced metrics and diagnostics from saved prediction artifacts without retraining:
+
+```powershell
+.venv\Scripts\python.exe -m src.models.evaluate_release_regression --run-dir experiments\release_ablation\<run_name>
+```
+
+Backfill SHAP artifacts for an already-finished release run without retraining:
+
+```powershell
+.venv\Scripts\python.exe -m src.models.evaluate_release_regression --run-dir experiments\release_ablation\<run_name> --include-shap
+```
+
+To switch from reliability to fidelity, keep the same config shape and change only:
+
+- `training.target_column: fidelity`
+
+The grouped release runner writes:
+
+- `ablation_model_comparison.csv`
+- `best_model_by_ablation.csv`
+- `suite_slice_metrics.csv`
+- `training.log`
+- `split_membership.parquet`
+- `grouped_split_audit.json`
+- per-model `shap_analysis/shap_feature_importance.csv`
+- per-model `shap_analysis/shap_summary.png`
+- per-model prediction tables, residual plots, importance artifacts, and grouped CV results
 
 ## Durable Milestone Reports
 
@@ -256,5 +365,6 @@ TODO: Replace the generic repo-role descriptions above with the actual repositor
 - [docs/architecture.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/architecture.md)
 - [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/data-flow.md)
 - [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/baseline-model.md)
+- [docs/reliability-regression.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/reliability-regression.md)
 - [docs/milestone-reports.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/milestone-reports.md)
 - [docs/thesis-chapter-mapping.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/thesis-chapter-mapping.md)

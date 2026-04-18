@@ -1,0 +1,29 @@
+{
+  "ablation_name": "both",
+  "model_name": "xgboost_regressor",
+  "model_display_name": "XGBoost Regressor",
+  "best_params": {
+    "learning_rate": 0.1,
+    "max_depth": 6
+  },
+  "validation_metrics": {
+    "mae": 0.0406007927852869,
+    "rmse": 0.07254499997219298,
+    "r2": 0.8519238319583288,
+    "train_rows": 200000,
+    "validation_rows": 25000,
+    "test_rows": 25000,
+    "feature_columns_before_encoding": 37,
+    "cv_best_r2": 0.8542937661017476
+  },
+  "test_metrics": {
+    "mae": 0.03933844534784556,
+    "rmse": 0.06968582506006768,
+    "r2": 0.8578569179452742,
+    "train_rows": 200000,
+    "validation_rows": 25000,
+    "test_rows": 25000,
+    "feature_columns_before_encoding": 37,
+    "cv_best_r2": 0.8542937661017476
+  }
+}

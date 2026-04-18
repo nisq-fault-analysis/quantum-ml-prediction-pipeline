@@ -1,0 +1,11 @@
+{
+  "available": true,
+  "variant_metrics": [
+    {
+      "compiler_variant": "raw",
+      "mae": 0.047597272851926276,
+      "rmse": 0.061751148524814344,
+      "r2": 0.7911328249117655
+    }
+  ]
+}

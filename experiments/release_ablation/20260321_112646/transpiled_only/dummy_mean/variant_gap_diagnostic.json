@@ -1,0 +1,13 @@
+{
+  "available": true,
+  "variant_metrics": [
+    {
+      "compiler_variant": "transpiled",
+      "mae": 0.1737600619171875,
+      "rmse": 0.2159635275245102,
+      "r2": -5.243660458309485e-05
+    }
+  ],
+  "ablation_name": "transpiled_only",
+  "model_name": "dummy_mean"
+}

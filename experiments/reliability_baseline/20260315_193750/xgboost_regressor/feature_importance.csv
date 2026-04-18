@@ -1,0 +1,11 @@
+feature,importance
+qubit_count,0.11477113
+cx_density,0.10852669
+t1_time,0.10662343
+t2_time,0.106376655
+t2_t1_ratio,0.10601295
+error_rate_gate,0.10481147
+readout_error,0.103569925
+gate_depth,0.09200092
+device_type_superconducting,0.08116026
+device_type_trapped_ion,0.076146625

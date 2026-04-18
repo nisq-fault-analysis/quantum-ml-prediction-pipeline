@@ -1,0 +1,20 @@
+{
+  "available": true,
+  "variant_metrics": [
+    {
+      "compiler_variant": "raw",
+      "mae": 0.02707157801389694,
+      "rmse": 0.038071250770858975,
+      "r2": 0.9206084274940565
+    },
+    {
+      "compiler_variant": "transpiled",
+      "mae": 0.05032601752579212,
+      "rmse": 0.0880607854143492,
+      "r2": 0.8337249617511184
+    }
+  ],
+  "delta_mae_transpiled_minus_raw": 0.023254439511895177,
+  "delta_r2_transpiled_minus_raw": -0.08688346574293804,
+  "sharp_difference_flag": true
+}

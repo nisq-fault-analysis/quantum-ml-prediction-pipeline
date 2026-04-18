@@ -14,6 +14,14 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+ReleaseAblationMode = Literal[
+    "raw_only",
+    "transpiled_only",
+    "both",
+    "both_without_local_features",
+    "both_with_local_features",
+]
+
 ModelName = Literal[
     "dummy_most_frequent",
     "logistic_regression",
@@ -33,6 +41,29 @@ def default_model_names() -> list[ModelName]:
     ]
 
 
+def default_release_regression_models() -> list[str]:
+    """Return the regression baselines used for packaged thesis datasets."""
+
+    return [
+        "dummy_mean",
+        "ridge_regression",
+        "random_forest_regressor",
+        "xgboost_regressor",
+    ]
+
+
+def default_release_ablation_modes() -> list[ReleaseAblationMode]:
+    """Return the ablation modes used to audit raw/transpiled effects."""
+
+    return [
+        "raw_only",
+        "transpiled_only",
+        "both",
+        "both_without_local_features",
+        "both_with_local_features",
+    ]
+
+
 class DataConfig(BaseModel):
     """Describe the raw dataset and the cleaned interim outputs."""
 
@@ -40,6 +71,11 @@ class DataConfig(BaseModel):
     cleaned_dataset_path: Path = Path("data/interim/nisq_fault_logs_cleaned.parquet")
     invalid_rows_path: Path = Path("data/interim/nisq_fault_logs_invalid_rows.csv")
     validation_report_path: Path = Path("data/interim/nisq_fault_logs_validation_report.json")
+    split_manifest_path: Path | None = None
+    feature_manifest_path: Path | None = None
+    train_split_path: Path | None = None
+    validation_split_path: Path | None = None
+    test_split_path: Path | None = None
     file_format: Literal["auto", "csv", "parquet"] = "auto"
     required_columns: list[str] = Field(
         default_factory=lambda: [
@@ -84,6 +120,34 @@ class DataConfig(BaseModel):
     drop_invalid_rows: bool = True
     align_short_bitstrings_to_qubit_count: bool = True
 
+    @model_validator(mode="after")
+    def validate_packaged_split_configuration(self) -> DataConfig:
+        """Ensure packaged split configuration is either complete or omitted."""
+
+        split_paths = [
+            self.train_split_path,
+            self.validation_split_path,
+            self.test_split_path,
+        ]
+        has_any_direct_split_path = any(path is not None for path in split_paths)
+        has_all_direct_split_paths = all(path is not None for path in split_paths)
+
+        if has_any_direct_split_path and not has_all_direct_split_paths:
+            raise ValueError(
+                "train_split_path, validation_split_path, and test_split_path must all be set "
+                "when configuring direct packaged split files."
+            )
+
+        if self.feature_manifest_path is not None and not (
+            self.split_manifest_path or has_all_direct_split_paths
+        ):
+            raise ValueError(
+                "feature_manifest_path requires either split_manifest_path or all direct split "
+                "paths to be configured."
+            )
+
+        return self
+
 
 class FeatureConfig(BaseModel):
     """Control how baseline and topology-aware feature sets are derived."""
@@ -114,6 +178,12 @@ class TrainingConfig(BaseModel):
     """Training options for the thesis baseline model suite."""
 
     model_names: list[ModelName] = Field(default_factory=default_model_names)
+    regression_model_names: list[str] = Field(default_factory=default_release_regression_models)
+    ablation_modes: list[ReleaseAblationMode] = Field(
+        default_factory=default_release_ablation_modes
+    )
+    target_column: str | None = None
+    group_column: str | None = None
     feature_set_name: Literal["baseline_raw", "topology_aware", "enhanced_topology"] = (
         "topology_aware"
     )
@@ -147,6 +217,22 @@ class TrainingConfig(BaseModel):
     xgboost_subsample: float = Field(default=0.8, gt=0.0, le=1.0)
     xgboost_colsample_bytree: float = Field(default=0.8, gt=0.0, le=1.0)
     xgboost_reg_lambda: float = Field(default=1.0, ge=0.0)
+    ridge_alpha: float = Field(default=1.0, gt=0.0)
+    grouped_cv_splits: int = Field(default=3, ge=2)
+    tune_hyperparameters: bool = True
+    difficulty_reference_column: str = "original_circuit_depth"
+    difficulty_bucket_count: int = Field(default=4, ge=2, le=10)
+    permutation_importance_repeats: int = Field(default=8, ge=1, le=100)
+    permutation_importance_max_rows: int = Field(default=5000, ge=100, le=50000)
+    enable_shap: bool = True
+    shap_explained_split: Literal["validation", "test"] = "test"
+    shap_max_rows: int = Field(default=1000, ge=50, le=10000)
+    shap_background_max_rows: int = Field(default=500, ge=50, le=5000)
+    enable_mlflow: bool = False
+    mlflow_tracking_uri: str | None = None
+    mlflow_experiment_name: str = "quantum-fault-classifier"
+    mlflow_run_name_prefix: str | None = None
+    grid_search_verbose: int = Field(default=2, ge=0, le=10)
     compute_roc_auc: bool = False
 
     @model_validator(mode="after")

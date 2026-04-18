@@ -1,0 +1,16 @@
+{
+  "reference_column": "original_circuit_depth",
+  "labels": [
+    "q1",
+    "q2",
+    "q3",
+    "q4"
+  ],
+  "edges": [
+    -Infinity,
+    9.0,
+    14.0,
+    21.0,
+    Infinity
+  ]
+}

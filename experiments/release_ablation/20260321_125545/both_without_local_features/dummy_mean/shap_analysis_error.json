@@ -1,0 +1,7 @@
+{
+  "available": false,
+  "error": "SHAP analysis is implemented for Ridge, Random Forest, and XGBoost regression, not dummy_mean.",
+  "explained_split": "test",
+  "ablation_name": "both_without_local_features",
+  "model_name": "dummy_mean"
+}

@@ -1,0 +1,24 @@
+{
+  "model_name": "xgboost_regressor",
+  "model_display_name": "XGBoost Regressor",
+  "validation_metrics": {
+    "mae": 0.14101854562369923,
+    "rmse": 0.1773299058426304,
+    "r2": -0.005609679165909931,
+    "train_rows": 79973,
+    "validation_rows": 14995,
+    "test_rows": 4999,
+    "feature_columns_before_encoding": 9,
+    "training_seconds": 1.3532
+  },
+  "test_metrics": {
+    "mae": 0.14208524928392693,
+    "rmse": 0.177948482889791,
+    "r2": -0.0035357527142831913,
+    "train_rows": 79973,
+    "validation_rows": 14995,
+    "test_rows": 4999,
+    "feature_columns_before_encoding": 9,
+    "training_seconds": 1.3532
+  }
+}

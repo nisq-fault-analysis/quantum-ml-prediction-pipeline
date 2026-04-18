@@ -1,0 +1,24 @@
+{
+  "model_name": "random_forest_regressor",
+  "model_display_name": "Random Forest Regressor",
+  "validation_metrics": {
+    "mae": 0.14095935097037574,
+    "rmse": 0.17686802369921995,
+    "r2": -0.0003779811384463372,
+    "train_rows": 79973,
+    "validation_rows": 14995,
+    "test_rows": 4999,
+    "feature_columns_before_encoding": 9,
+    "training_seconds": 10.3102
+  },
+  "test_metrics": {
+    "mae": 0.14205474740273094,
+    "rmse": 0.17754818316668147,
+    "r2": 0.0009741283836686154,
+    "train_rows": 79973,
+    "validation_rows": 14995,
+    "test_rows": 4999,
+    "feature_columns_before_encoding": 9,
+    "training_seconds": 10.3102
+  }
+}

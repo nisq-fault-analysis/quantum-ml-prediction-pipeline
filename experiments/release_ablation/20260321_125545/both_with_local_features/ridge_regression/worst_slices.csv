@@ -1,0 +1,6 @@
+split_name,ablation_name,model_name,slice_name,slice_value,sample_count,mae,rmse,r2
+test,both_with_local_features,ridge_regression,family,qft_lite,2284,0.12324815312148434,0.16337109485852028,0.5346256888799468
+test,both_with_local_features,ridge_regression,family,mixed_random,1562,0.12165835783286755,0.18115962726088505,0.32479058359911994
+test,both_with_local_features,ridge_regression,family,measurement_sensitive,2140,0.1040654207779078,0.15543598314376716,0.5719154614588247
+test,both_with_local_features,ridge_regression,family,decoherence_sensitive,2344,0.09617605657191676,0.13493396834487328,0.7005079111109483
+test,both_with_local_features,ridge_regression,family,clean_control,1270,0.09009151613332025,0.12610860340539523,0.3889560764038904

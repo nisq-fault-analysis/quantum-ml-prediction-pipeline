@@ -131,3 +131,83 @@ def plot_actual_vs_predicted(
     figure.tight_layout()
 
     _save_figure(figure, output_path)
+
+
+def plot_residuals(
+    y_true: Sequence[float],
+    y_pred: Sequence[float],
+    output_path: str | Path,
+    *,
+    title: str,
+) -> None:
+    """Plot residuals against predicted values for regression diagnostics."""
+
+    predicted = pd.Series(y_pred, dtype=float)
+    residuals = predicted - pd.Series(y_true, dtype=float)
+
+    figure, axis = plt.subplots(figsize=(8, 6))
+    axis.scatter(predicted, residuals, alpha=0.35, color="#6c757d", edgecolors="none")
+    axis.axhline(0.0, color="#c1121f", linewidth=1.5)
+    axis.set_title(title)
+    axis.set_xlabel("Predicted value")
+    axis.set_ylabel("Residual")
+    figure.tight_layout()
+
+    _save_figure(figure, output_path)
+
+
+def plot_slice_metric_bars(
+    slice_metric_frame: pd.DataFrame,
+    output_path: str | Path,
+    *,
+    metric_column: str,
+    title: str,
+    top_n: int = 10,
+) -> None:
+    """Plot a horizontal bar chart for slice-level metrics."""
+
+    chart_frame = (
+        slice_metric_frame.sort_values(by=metric_column, ascending=False)
+        .head(top_n)
+        .iloc[::-1]
+        .copy()
+    )
+    labels = [
+        f"{row.slice_name}={row.slice_value} (n={int(row.sample_count)})"
+        for row in chart_frame.itertuples()
+    ]
+
+    figure, axis = plt.subplots(figsize=(11, 6))
+    axis.barh(labels, chart_frame[metric_column], color="#1982c4")
+    axis.set_title(title)
+    axis.set_xlabel(metric_column)
+    axis.set_ylabel("Slice")
+    figure.tight_layout()
+
+    _save_figure(figure, output_path)
+
+
+def plot_shap_summary(
+    shap_values,
+    feature_frame: pd.DataFrame,
+    output_path: str | Path,
+    *,
+    title: str,
+    max_display: int = 15,
+) -> None:
+    """Save a SHAP summary plot for a sampled evaluation set."""
+
+    import shap
+
+    shap.summary_plot(
+        shap_values,
+        features=feature_frame,
+        feature_names=feature_frame.columns.tolist(),
+        max_display=max_display,
+        show=False,
+    )
+    figure = plt.gcf()
+    figure.set_size_inches(10, 6)
+    plt.title(title)
+    figure.tight_layout()
+    _save_figure(figure, output_path)

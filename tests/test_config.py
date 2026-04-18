@@ -21,6 +21,8 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
               cleaned_dataset_path: data/interim/cleaned.parquet
               invalid_rows_path: data/interim/invalid.csv
               validation_report_path: data/interim/report.json
+              split_manifest_path: data/raw/release/splits/split_manifest.json
+              feature_manifest_path: data/raw/release/splits/feature_manifest.json
               file_format: csv
               id_column: circuit_id
               label_column: error_type
@@ -44,6 +46,7 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
               baseline_numeric_columns: ["qubit_count", "gate_depth"]
               categorical_feature_columns: ["device_type"]
             training:
+              target_column: reliability
               feature_set_name: topology_aware
               prediction_context: pre_execution
               excluded_feature_columns: ["fidelity", "timestamp"]
@@ -56,6 +59,7 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
               min_samples_split: 2
               min_samples_leaf: 1
               class_weight: none
+              grid_search_verbose: 1
               compute_roc_auc: false
             output:
               experiment_root: experiments/rf_baseline
@@ -68,10 +72,16 @@ def test_load_config_reads_rf_baseline_yaml_into_typed_model(tmp_path: Path) -> 
     config = load_config(config_path)
 
     assert config.data.dataset_path == Path("data/raw/NISQ-FaultLogs-100K.csv")
+    assert config.data.split_manifest_path == Path("data/raw/release/splits/split_manifest.json")
+    assert config.data.feature_manifest_path == Path(
+        "data/raw/release/splits/feature_manifest.json"
+    )
+    assert config.training.target_column == "reliability"
     assert config.training.feature_set_name == "topology_aware"
     assert config.training.prediction_context == "pre_execution"
     assert config.training.excluded_feature_columns == ["fidelity", "timestamp"]
     assert config.training.validation_size == 0.15
+    assert config.training.grid_search_verbose == 1
     assert config.output.experiment_root == Path("experiments/rf_baseline")
 
 

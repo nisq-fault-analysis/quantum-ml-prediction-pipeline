@@ -1,0 +1,6 @@
+split_name,ablation_name,model_name,slice_name,slice_value,sample_count,mae,rmse,r2
+test,raw_only,xgboost_regressor,family,qaoa_like,1380,0.03982422870138417,0.05116462523309762,0.927349104343167
+test,raw_only,xgboost_regressor,family,entanglement_heavy,1256,0.03835299364320791,0.04872729066054527,0.9377511086499476
+test,raw_only,xgboost_regressor,family,trotter_ising,1378,0.03557848964962454,0.04733775127617902,0.8761313542818209
+test,raw_only,xgboost_regressor,family,mixed_random,781,0.0328034793674259,0.04255294155386856,0.6696834501332738
+test,raw_only,xgboost_regressor,qubit_count,6,2282,0.03236122979185855,0.04468908107615699,0.9127143036616752

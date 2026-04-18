@@ -1,0 +1,9 @@
+{
+  "available": true,
+  "family_name": "routing_sensitive",
+  "delta_mae_with_local_minus_without_local": -2.335650580269702e-05,
+  "delta_r2_with_local_minus_without_local": 1.666657912469116e-05,
+  "material_improvement_flag": false,
+  "without_local_sample_count": 2436,
+  "with_local_sample_count": 2436
+}

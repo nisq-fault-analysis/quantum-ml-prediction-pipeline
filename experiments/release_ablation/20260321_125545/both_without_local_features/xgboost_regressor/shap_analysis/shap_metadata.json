@@ -1,0 +1,9 @@
+{
+  "available": true,
+  "model_name": "xgboost_regressor",
+  "explained_split": "test",
+  "explained_rows": 1000,
+  "background_rows": 500,
+  "transformed_feature_count": 39,
+  "source_feature_count": 38
+}

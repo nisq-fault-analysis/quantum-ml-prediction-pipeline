@@ -10,11 +10,13 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from src.config.schema import ProjectConfig
+from src.data.dataset import validate_required_columns
 from src.evaluation.metrics import compute_regression_metrics
 
 REGRESSION_MODEL_DISPLAY_NAMES: dict[str, str] = {
@@ -29,6 +31,9 @@ OUTCOME_DERIVED_COLUMNS = {
     "bit_errors",
     "observed_error_rate",
     "bit_error_density",
+    "exact_match_probability",
+    "mitigated_reliability",
+    "mitigation_gain",
 }
 
 
@@ -72,10 +77,19 @@ def _build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
         transformers=[
             (
                 "categorical",
-                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                Pipeline(
+                    steps=[
+                        ("imputer", SimpleImputer(strategy="most_frequent")),
+                        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
+                    ]
+                ),
                 categorical_columns,
             ),
-            ("numeric", "passthrough", numeric_columns),
+            (
+                "numeric",
+                Pipeline(steps=[("imputer", SimpleImputer(strategy="median"))]),
+                numeric_columns,
+            ),
         ],
         remainder="drop",
         verbose_feature_names_out=False,
@@ -85,19 +99,92 @@ def _build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
 def build_regression_features(
     feature_frame: pd.DataFrame,
     config: ProjectConfig,
+    *,
+    target_column: str | None = None,
+    candidate_feature_columns: list[str] | None = None,
+    excluded_feature_columns: list[str] | None = None,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Prepare an input matrix for fidelity regression without target leakage."""
 
-    target = feature_frame["fidelity"].astype(float)
-    candidate_drop_columns = {
+    target_name = target_column or config.training.target_column or "fidelity"
+    excluded_columns = {
         config.data.id_column,
         config.data.label_column,
-        "fidelity",
+        target_name,
         *OUTCOME_DERIVED_COLUMNS,
+        *config.training.excluded_feature_columns,
+        *(excluded_feature_columns or []),
     }
-    X = feature_frame.drop(columns=list(candidate_drop_columns), errors="ignore")
-    X = X.loc[:, X.nunique(dropna=False) > 1].copy()
-    return X, target
+    validate_required_columns(feature_frame, [target_name])
+    target = pd.to_numeric(feature_frame[target_name], errors="coerce")
+    if target.isna().any():
+        missing_target_count = int(target.isna().sum())
+        raise ValueError(
+            f"Regression target column {target_name!r} contains {missing_target_count} missing "
+            "or non-numeric values."
+        )
+
+    if candidate_feature_columns is not None:
+        validate_required_columns(feature_frame, candidate_feature_columns)
+        X = feature_frame.loc[:, candidate_feature_columns].copy()
+        X = X.drop(columns=list(excluded_columns), errors="ignore")
+    else:
+        X = feature_frame.drop(columns=list(excluded_columns), errors="ignore")
+
+    candidate_drop_columns = {
+        column for column in X.columns if X[column].nunique(dropna=False) <= 1
+    }
+    X = X.drop(columns=list(candidate_drop_columns), errors="ignore")
+    return X, target.astype(float)
+
+
+def build_regression_split_from_precomputed_frames(
+    *,
+    train_frame: pd.DataFrame,
+    validation_frame: pd.DataFrame,
+    test_frame: pd.DataFrame,
+    target_column: str,
+    feature_columns: list[str],
+) -> RegressionSplit:
+    """Build a fixed regression split from packaged train/validation/test frames."""
+
+    validate_required_columns(train_frame, [target_column, *feature_columns])
+    validate_required_columns(validation_frame, [target_column, *feature_columns])
+    validate_required_columns(test_frame, [target_column, *feature_columns])
+
+    X_train = train_frame.loc[:, feature_columns].copy()
+    X_validation = validation_frame.loc[:, feature_columns].copy()
+    X_test = test_frame.loc[:, feature_columns].copy()
+
+    selected_columns = [
+        column for column in feature_columns if X_train[column].nunique(dropna=False) > 1
+    ]
+    if not selected_columns:
+        raise ValueError("No usable feature columns remain after dropping zero-variance columns.")
+
+    y_train = pd.to_numeric(train_frame[target_column], errors="coerce")
+    y_validation = pd.to_numeric(validation_frame[target_column], errors="coerce")
+    y_test = pd.to_numeric(test_frame[target_column], errors="coerce")
+    for split_name, target in [
+        ("train", y_train),
+        ("validation", y_validation),
+        ("test", y_test),
+    ]:
+        if target.isna().any():
+            missing_target_count = int(target.isna().sum())
+            raise ValueError(
+                f"Regression target column {target_column!r} contains {missing_target_count} "
+                f"missing or non-numeric values in the {split_name} split."
+            )
+
+    return RegressionSplit(
+        X_train=X_train.loc[:, selected_columns].copy(),
+        X_validation=X_validation.loc[:, selected_columns].copy(),
+        X_test=X_test.loc[:, selected_columns].copy(),
+        y_train=y_train.astype(float),
+        y_validation=y_validation.astype(float),
+        y_test=y_test.astype(float),
+    )
 
 
 def split_regression_dataset(
@@ -205,7 +292,17 @@ def train_regression_suite(
     """Train the fidelity regression suite and collect validation/test metrics."""
 
     split = split_regression_dataset(feature_frame, target, config)
+    return train_regression_suite_on_split(split, config)
+
+
+def train_regression_suite_on_split(
+    split: RegressionSplit,
+    config: ProjectConfig,
+) -> tuple[RegressionSplit, list[RegressionResult]]:
+    """Train the regression suite on a caller-supplied split."""
+
     results: list[RegressionResult] = []
+    feature_column_count = int(split.X_train.shape[1])
 
     for model_name in ["dummy_mean", "random_forest_regressor", "xgboost_regressor"]:
         started_at = perf_counter()
@@ -229,7 +326,7 @@ def train_regression_suite(
                 "train_rows": int(len(split.X_train)),
                 "validation_rows": int(len(split.X_validation)),
                 "test_rows": int(len(split.X_test)),
-                "feature_columns_before_encoding": int(feature_frame.shape[1]),
+                "feature_columns_before_encoding": feature_column_count,
                 "training_seconds": training_seconds,
             }
         )
@@ -245,7 +342,7 @@ def train_regression_suite(
                 "train_rows": int(len(split.X_train)),
                 "validation_rows": int(len(split.X_validation)),
                 "test_rows": int(len(split.X_test)),
-                "feature_columns_before_encoding": int(feature_frame.shape[1]),
+                "feature_columns_before_encoding": feature_column_count,
                 "training_seconds": training_seconds,
             }
         )

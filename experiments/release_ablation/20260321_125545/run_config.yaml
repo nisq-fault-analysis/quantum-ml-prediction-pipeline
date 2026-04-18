@@ -1,0 +1,143 @@
+data:
+  dataset_path: data\raw\thesis_production_125k\thesis_production_125k.parquet
+  cleaned_dataset_path: data\interim\nisq_fault_logs_cleaned.parquet
+  invalid_rows_path: data\interim\nisq_fault_logs_invalid_rows.csv
+  validation_report_path: data\interim\nisq_fault_logs_validation_report.json
+  split_manifest_path: data\raw\thesis_production_125k\release\splits\split_manifest.json
+  feature_manifest_path: data\raw\thesis_production_125k\release\splits\feature_manifest.json
+  train_split_path: null
+  validation_split_path: null
+  test_split_path: null
+  file_format: auto
+  required_columns:
+  - circuit_id
+  - qubit_count
+  - gate_depth
+  - gate_types
+  - error_rate_gate
+  - t1_time
+  - t2_time
+  - readout_error
+  - shots
+  - bitstring
+  - ideal_bitstring
+  - fidelity
+  - timestamp
+  - device_type
+  - error_type
+  id_column: circuit_id
+  label_column: error_type
+  gate_sequence_column: gate_types
+  qubit_count_column: qubit_count
+  bitstring_column: bitstring
+  ideal_bitstring_column: ideal_bitstring
+  timestamp_column: timestamp
+  categorical_columns:
+  - device_type
+  numeric_columns:
+  - qubit_count
+  - gate_depth
+  - error_rate_gate
+  - t1_time
+  - t2_time
+  - readout_error
+  - shots
+  - fidelity
+  drop_columns: []
+  drop_invalid_rows: true
+  align_short_bitstrings_to_qubit_count: true
+features:
+  baseline_feature_path: data\processed\rf_baseline_raw_features.parquet
+  topology_feature_path: data\processed\rf_baseline_topology_aware_features.parquet
+  enhanced_feature_path: data\processed\rf_enhanced_topology_features.parquet
+  feature_report_path: data\processed\rf_feature_report.json
+  dataset_profile_path: data\processed\rf_dataset_profile.json
+  gate_delimiters:
+  - ','
+  - ;
+  - '|'
+  - ->
+  two_qubit_gates:
+  - cx
+  - cz
+  - swap
+  baseline_numeric_columns:
+  - qubit_count
+  - gate_depth
+  - error_rate_gate
+  - t1_time
+  - t2_time
+  - readout_error
+  - shots
+  - fidelity
+  categorical_feature_columns:
+  - device_type
+training:
+  model_names:
+  - dummy_most_frequent
+  - logistic_regression
+  - random_forest
+  - xgboost
+  regression_model_names:
+  - dummy_mean
+  - ridge_regression
+  - random_forest_regressor
+  - xgboost_regressor
+  ablation_modes:
+  - raw_only
+  - transpiled_only
+  - both
+  - both_without_local_features
+  - both_with_local_features
+  target_column: reliability
+  group_column: base_circuit_id
+  feature_set_name: topology_aware
+  prediction_context: pre_execution
+  excluded_feature_columns:
+  - fidelity
+  - fidelity_loss
+  - bit_errors
+  - observed_error_rate
+  - bit_error_density
+  - timestamp
+  - exact_match_probability
+  - mitigated_reliability
+  - mitigation_gain
+  - noise_regime
+  - noise_dominant_channel
+  validation_size: 0.15
+  test_size: 0.05
+  random_state: 42
+  stratify_by_label: true
+  dummy_strategy: most_frequent
+  logistic_c: 1.0
+  logistic_max_iter: 1000
+  logistic_class_weight: none
+  n_estimators: 200
+  max_depth: 12
+  min_samples_split: 2
+  min_samples_leaf: 2
+  class_weight: none
+  xgboost_n_estimators: 300
+  xgboost_max_depth: 6
+  xgboost_learning_rate: 0.05
+  xgboost_subsample: 0.8
+  xgboost_colsample_bytree: 0.8
+  xgboost_reg_lambda: 1.0
+  ridge_alpha: 1.0
+  grouped_cv_splits: 3
+  tune_hyperparameters: true
+  difficulty_reference_column: original_circuit_depth
+  difficulty_bucket_count: 4
+  permutation_importance_repeats: 8
+  permutation_importance_max_rows: 5000
+  enable_mlflow: false
+  mlflow_tracking_uri: null
+  mlflow_experiment_name: quantum-fault-classifier-release
+  mlflow_run_name_prefix: null
+  grid_search_verbose: 2
+  compute_roc_auc: false
+output:
+  experiment_root: experiments\release_ablation
+  run_name: '20260321_125545'
+  figures_dir: reports\figures\release_ablation

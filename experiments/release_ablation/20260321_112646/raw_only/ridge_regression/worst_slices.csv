@@ -1,0 +1,6 @@
+split_name,ablation_name,model_name,slice_name,slice_value,sample_count,mae,rmse,r2
+test,raw_only,ridge_regression,qubit_count,6,2282,0.065866116526877,0.08273306143594063,0.7008435146901967
+test,raw_only,ridge_regression,family,entanglement_heavy,1256,0.06118693091973693,0.07693077777721605,0.8448372962215702
+test,raw_only,ridge_regression,family,qft_lite,1142,0.05820607032964637,0.07422438277254519,0.31693223388838243
+test,raw_only,ridge_regression,family,qaoa_like,1380,0.0551916168463445,0.07031177063728812,0.8627989460633989
+test,raw_only,ridge_regression,family,trotter_ising,1378,0.05458467918457298,0.07095627155737862,0.7216907014035636

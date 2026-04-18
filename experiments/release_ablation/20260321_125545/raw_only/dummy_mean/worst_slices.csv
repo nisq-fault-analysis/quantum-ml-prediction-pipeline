@@ -1,0 +1,6 @@
+split_name,ablation_name,model_name,slice_name,slice_value,sample_count,mae,rmse,r2
+test,raw_only,dummy_mean,qubit_count,6,2282,0.18191985953248255,0.23001821116885754,-1.3124091287992137
+test,raw_only,dummy_mean,family,entanglement_heavy,1256,0.16593622938022493,0.21141030596399044,-0.17176197845606112
+test,raw_only,dummy_mean,family,qaoa_like,1380,0.16316153525532157,0.20679996433321315,-0.1868676620555425
+test,raw_only,dummy_mean,qubit_count,2,1295,0.13019865858017612,0.1368515658106487,-9.493451634665096
+test,raw_only,dummy_mean,family,measurement_sensitive,1070,0.11300748296948013,0.13092100894456443,-0.1750071194973135
