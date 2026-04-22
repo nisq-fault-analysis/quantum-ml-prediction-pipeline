@@ -48,7 +48,7 @@ training:
   shap_max_rows: 1000
   shap_background_max_rows: 500
   enable_mlflow: false
-  mlflow_experiment_name: quantum-fault-classifier-release
+  mlflow_experiment_name: nisq-ml-predictor-release
   n_estimators: 200
   max_depth: 12
   min_samples_split: 2

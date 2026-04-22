@@ -1,1 +1,1 @@
-"""Top-level package for the quantum fault classification research codebase."""
+"""Top-level package for the NISQ reliability prediction research codebase."""

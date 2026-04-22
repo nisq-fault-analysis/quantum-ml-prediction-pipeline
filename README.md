@@ -1,6 +1,6 @@
-# quantum-fault-classifier
+# nisq-ml-predictor
 
-Research repository for a diploma thesis on machine-learning-based classification of NISQ circuit fault types.
+Research repository for a diploma thesis on machine-learning-based reliability prediction of NISQ circuits.
 
 ## Project Purpose
 
@@ -33,7 +33,7 @@ That baseline is intentionally simple and transparent so it can support:
 ## Repository Structure
 
 ```text
-quantum-fault-classifier/
+nisq-ml-predictor/
 |-- data/
 |   |-- raw/                  # Original Kaggle CSV, never edited in place
 |   |-- interim/              # Cleaned dataset plus validation logs
@@ -118,7 +118,7 @@ Optional notebook support:
 
 Expected file:
 
-- [data/raw/NISQ-FaultLogs-100K.csv](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/data/raw/NISQ-FaultLogs-100K.csv)
+- [data/raw/NISQ-FaultLogs-100K.csv](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/data/raw/NISQ-FaultLogs-100K.csv)
 
 ## Typical Workflow
 
@@ -362,9 +362,9 @@ TODO: Replace the generic repo-role descriptions above with the actual repositor
 
 ## Key Docs
 
-- [docs/architecture.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/architecture.md)
-- [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/data-flow.md)
-- [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/baseline-model.md)
-- [docs/reliability-regression.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/reliability-regression.md)
-- [docs/milestone-reports.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/milestone-reports.md)
-- [docs/thesis-chapter-mapping.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/thesis-chapter-mapping.md)
+- [docs/architecture.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/architecture.md)
+- [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/data-flow.md)
+- [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/baseline-model.md)
+- [docs/reliability-regression.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/reliability-regression.md)
+- [docs/milestone-reports.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/milestone-reports.md)
+- [docs/thesis-chapter-mapping.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/thesis-chapter-mapping.md)
