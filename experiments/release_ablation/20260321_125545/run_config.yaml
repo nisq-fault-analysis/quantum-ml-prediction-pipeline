@@ -133,7 +133,7 @@ training:
   permutation_importance_max_rows: 5000
   enable_mlflow: false
   mlflow_tracking_uri: null
-  mlflow_experiment_name: quantum-fault-classifier-release
+  mlflow_experiment_name: nisq-ml-predictor-release
   mlflow_run_name_prefix: null
   grid_search_verbose: 2
   compute_roc_auc: false

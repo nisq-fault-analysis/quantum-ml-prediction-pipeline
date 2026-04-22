@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "quantum-fault-classifier"
+name = "nisq-ml-predictor"
 version = "0.1.0"
-description = "Research repository for ML-based classification of NISQ circuit fault types."
+description = "Research repository for ML-based reliability prediction of NISQ circuits."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "TODO: Your Name" }]

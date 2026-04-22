@@ -230,7 +230,7 @@ class TrainingConfig(BaseModel):
     shap_background_max_rows: int = Field(default=500, ge=50, le=5000)
     enable_mlflow: bool = False
     mlflow_tracking_uri: str | None = None
-    mlflow_experiment_name: str = "quantum-fault-classifier"
+    mlflow_experiment_name: str = "nisq-ml-predictor"
     mlflow_run_name_prefix: str | None = None
     grid_search_verbose: int = Field(default=2, ge=0, le=10)
     compute_roc_auc: bool = False

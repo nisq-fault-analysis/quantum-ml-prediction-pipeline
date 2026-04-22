@@ -6,9 +6,9 @@ This document connects the codebase to the written thesis so implementation and 
 
 Relevant files:
 
-- [README.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/README.md)
-- [docs/architecture.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/architecture.md)
-- [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/baseline-model.md)
+- [README.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/README.md)
+- [docs/architecture.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/architecture.md)
+- [docs/baseline-model.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/baseline-model.md)
 
 How they help:
 
@@ -21,11 +21,11 @@ How they help:
 
 Relevant files:
 
-- [experiments/configs/baseline.yaml](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/experiments/configs/baseline.yaml)
-- [experiments/configs/model_suite.yaml](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/experiments/configs/model_suite.yaml)
-- [src/data/dataset.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/data/dataset.py)
-- [src/data/prepare.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/data/prepare.py)
-- [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/docs/data-flow.md)
+- [experiments/configs/baseline.yaml](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/experiments/configs/baseline.yaml)
+- [experiments/configs/model_suite.yaml](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/experiments/configs/model_suite.yaml)
+- [src/data/dataset.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/data/dataset.py)
+- [src/data/prepare.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/data/prepare.py)
+- [docs/data-flow.md](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/docs/data-flow.md)
 
 How they help:
 
@@ -38,12 +38,12 @@ How they help:
 
 Relevant files:
 
-- [src/features/gate_sequence.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/features/gate_sequence.py)
-- [src/features/build_features.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/features/build_features.py)
-- [src/models/random_forest.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/random_forest.py)
-- [src/models/model_suite.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/model_suite.py)
-- [src/models/train_model_suite.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/train_model_suite.py)
-- [src/models/train_rf_baseline.py](C:/Users/coufa/Documents/GitHub/quantum-fault-classifier/src/models/train_rf_baseline.py)
+- [src/features/gate_sequence.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/features/gate_sequence.py)
+- [src/features/build_features.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/features/build_features.py)
+- [src/models/random_forest.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/models/random_forest.py)
+- [src/models/model_suite.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/models/model_suite.py)
+- [src/models/train_model_suite.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/models/train_model_suite.py)
+- [src/models/train_rf_baseline.py](C:/Users/coufa/Documents/GitHub/nisq-ml-predictor/src/models/train_rf_baseline.py)
 
 How they help:
 
