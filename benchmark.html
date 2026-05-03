@@ -1,0 +1,192 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>benchmark</title>
+<style>body{font-family:Arial,sans-serif;max-width:980px;margin:32px auto;line-height:1.5;color:#1f2933}pre{background:#f6f8fa;padding:12px;overflow:auto;border-radius:6px}.code{border-left:4px solid #d0d7de;padding-left:12px}table{border-collapse:collapse}td,th{border:1px solid #d0d7de;padding:4px 8px}</style>
+</head><body>
+<h1>HW2 Benchmark</h1>
+<p>This notebook compares a naive regression baseline with a simple ML benchmark for pre-run reliability prediction on the generated `thesis_production_125k_v1` dataset sample saved in `data/hw2/`. The Kaggle NISQ Fault Logs 100K dataset is historical background for this repository, but it is not the dataset evaluated in this HW2 benchmark.</p>
+<p>The comparison uses the validation split only. The test split is loaded only to confirm that it exists and remains reserved for later final evaluation.</p>
+<div class="code"><pre><code>import importlib.util
+import subprocess
+import sys
+
+_REQUIRED_IMPORTS = [
+    (&#x27;pandas&#x27;, &#x27;pandas&#x27;),
+    (&#x27;pyarrow&#x27;, &#x27;pyarrow&#x27;),
+    (&#x27;sklearn&#x27;, &#x27;scikit-learn&#x27;),
+]
+
+_missing_pip_packages = []
+for import_name, pip_name in _REQUIRED_IMPORTS:
+    if importlib.util.find_spec(import_name) is None:
+        _missing_pip_packages.append(pip_name)
+
+if _missing_pip_packages:
+    _cmd = [sys.executable, &#x27;-m&#x27;, &#x27;pip&#x27;, &#x27;install&#x27;, *_missing_pip_packages]
+    print(&#x27;Installing missing notebook dependencies with:&#x27;)
+    print(&#x27; &#x27;.join(_cmd))
+    subprocess.check_call(_cmd)
+else:
+    print(&#x27;Notebook dependencies are available.&#x27;)
+</code></pre></div>
+<pre>Notebook dependencies are available.
+</pre>
+<h2>1. Task And Metric</h2>
+<p>Task: predict continuous `reliability` from pre-run circuit and hardware features.</p>
+<p>Primary validation metric: MAE, because it is directly interpretable as average absolute reliability error on a `[0, 1]` target. RMSE and R2 are reported as supporting metrics.</p>
+<div class="code"><pre><code>from pathlib import Path
+import json
+
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.dummy import DummyRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import Ridge
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+RANDOM_STATE = 42
+HW2_DATA_DIR = Path(&#x27;data/hw2&#x27;)
+train = pd.read_parquet(HW2_DATA_DIR / &#x27;train.parquet&#x27;)
+validation = pd.read_parquet(HW2_DATA_DIR / &#x27;validation.parquet&#x27;)
+test = pd.read_parquet(HW2_DATA_DIR / &#x27;test.parquet&#x27;)
+feature_policy = json.loads((HW2_DATA_DIR / &#x27;feature_policy.json&#x27;).read_text(encoding=&#x27;utf-8&#x27;))
+
+print(f&#x27;Train rows: {len(train):,}&#x27;)
+print(f&#x27;Validation rows: {len(validation):,}&#x27;)
+print(f&#x27;Test rows, reserved and not evaluated here: {len(test):,}&#x27;)
+</code></pre></div>
+<pre>Train rows: 20,000
+Validation rows: 2,500
+Test rows, reserved and not evaluated here: 2,500
+</pre>
+<h2>2. Train-Only Preprocessing Pipeline</h2>
+<p>The imputer, encoder, and scaler are inside sklearn pipelines. They are fitted only on the training split. Validation rows are transformed with train-derived parameters.</p>
+<div class="code"><pre><code>target_column = feature_policy[&#x27;target_column&#x27;]
+feature_columns = feature_policy[&#x27;allowed_feature_columns&#x27;]
+
+X_train = train[feature_columns]
+y_train = train[target_column].astype(float)
+X_validation = validation[feature_columns]
+y_validation = validation[target_column].astype(float)
+
+categorical_columns = X_train.select_dtypes(include=[&#x27;object&#x27;, &#x27;string&#x27;, &#x27;category&#x27;, &#x27;bool&#x27;]).columns.tolist()
+numeric_columns = [column for column in feature_columns if column not in categorical_columns]
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        (&#x27;categorical&#x27;, Pipeline([
+            (&#x27;imputer&#x27;, SimpleImputer(strategy=&#x27;most_frequent&#x27;)),
+            (&#x27;encoder&#x27;, OneHotEncoder(handle_unknown=&#x27;ignore&#x27;)),
+        ]), categorical_columns),
+        (&#x27;numeric&#x27;, Pipeline([
+            (&#x27;imputer&#x27;, SimpleImputer(strategy=&#x27;median&#x27;)),
+            (&#x27;scaler&#x27;, StandardScaler()),
+        ]), numeric_columns),
+    ],
+    remainder=&#x27;drop&#x27;,
+)
+
+print(f&#x27;Categorical columns ({len(categorical_columns)}):&#x27;, categorical_columns)
+print(f&#x27;Numeric columns ({len(numeric_columns)}):&#x27;, numeric_columns[:12], &#x27;...&#x27;)
+</code></pre></div>
+<pre>Categorical columns (0): []
+Numeric columns (46): [&#x27;qubit_count&#x27;, &#x27;original_circuit_depth&#x27;, &#x27;original_num_cx&#x27;, &#x27;original_num_cz&#x27;, &#x27;original_num_single_qubit_gates&#x27;, &#x27;original_entanglement_density&#x27;, &#x27;original_unique_two_qubit_edge_count&#x27;, &#x27;original_interaction_graph_density&#x27;, &#x27;original_mean_qubit_gate_count&#x27;, &#x27;original_max_qubit_gate_count&#x27;, &#x27;original_mean_qubit_two_qubit_gate_count&#x27;, &#x27;original_max_qubit_two_qubit_gate_count&#x27;] ...
+</pre>
+<h2>3. Naive Baseline And Simple ML Benchmark</h2>
+<p>The naive baseline predicts the training-set mean reliability. Ridge regression is a simple linear model with regularization, which is appropriate for HW2 because it tests whether a transparent baseline can use the pre-run features without moving into advanced model tuning.</p>
+<div class="code"><pre><code>def regression_metrics(y_true, y_pred):
+    return {
+        &#x27;validation_mae&#x27;: mean_absolute_error(y_true, y_pred),
+        &#x27;validation_rmse&#x27;: mean_squared_error(y_true, y_pred) ** 0.5,
+        &#x27;validation_r2&#x27;: r2_score(y_true, y_pred),
+    }
+
+models = {
+    &#x27;dummy_mean&#x27;: DummyRegressor(strategy=&#x27;mean&#x27;),
+    &#x27;ridge_regression&#x27;: Ridge(alpha=1.0, random_state=RANDOM_STATE),
+}
+
+results = []
+for model_name, estimator in models.items():
+    pipeline = Pipeline([
+        (&#x27;preprocessor&#x27;, preprocessor),
+        (&#x27;model&#x27;, estimator),
+    ])
+    pipeline.fit(X_train, y_train)
+    predictions = pipeline.predict(X_validation)
+    row = {&#x27;model&#x27;: model_name}
+    row.update(regression_metrics(y_validation, predictions))
+    results.append(row)
+
+comparison = pd.DataFrame(results).sort_values(&#x27;validation_mae&#x27;, ascending=True).reset_index(drop=True)
+comparison
+</code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>model</th>
+      <th>validation_mae</th>
+      <th>validation_rmse</th>
+      <th>validation_r2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ridge_regression</td>
+      <td>0.072702</td>
+      <td>0.109432</td>
+      <td>0.664128</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>dummy_mean</td>
+      <td>0.145326</td>
+      <td>0.188831</td>
+      <td>-0.000074</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>4. Validation-Only Evaluation</h2>
+<p>The table above is the HW2 benchmark comparison. The test set is intentionally not evaluated here, because it should remain untouched until the final model/evaluation stage.</p>
+<div class="code"><pre><code>print(&#x27;Validation target summary:&#x27;)
+print(y_validation.describe().to_string())
+print()
+print(&#x27;Benchmark comparison:&#x27;)
+print(comparison.to_string(index=False))
+</code></pre></div>
+<pre>Validation target summary:
+count    2500.000000
+mean        0.791551
+std         0.188862
+min         0.010742
+25%         0.726562
+50%         0.848145
+75%         0.925781
+max         1.000000
+
+Benchmark comparison:
+           model  validation_mae  validation_rmse  validation_r2
+ridge_regression        0.072702         0.109432       0.664128
+      dummy_mean        0.145326         0.188831      -0.000074
+</pre>
+<h2>5. Short Summary</h2>
+<p>The reliability task is a regression problem, not fault-type classification. The benchmark confirms that the project now has a clean reference point: a train-mean naive baseline and a simple Ridge model, both evaluated only on validation data with train-only preprocessing. The next modeling step can compare stronger regressors while keeping the grouped test set sealed.</p>
+</body></html>

@@ -7,11 +7,26 @@ Fault-type classification and reliability prediction answer different thesis que
 - classification asks which fault label best describes a circuit outcome
 - reliability regression asks how trustworthy the circuit execution is likely to be on a bounded `0..1` scale
 
-This repository defines a first leakage-free reliability benchmark so the thesis can discuss pre-run reliability estimation without quietly using observed outputs as model inputs.
+This repository defines a leakage-free reliability benchmark so the thesis can discuss pre-run reliability estimation without quietly using observed outputs as model inputs.
+
+## Dataset Roles
+
+The repository contains two dataset lines:
+
+- **Kaggle NISQ Fault Logs 100K**: the earlier public dataset used for initial cleaning,
+  feature engineering, and historical fault-type classification experiments.
+- **Generated thesis dataset `thesis_production_125k_v1`**: the current thesis dataset
+  produced by the separate dataset-generator workflow. It contains 125,000 base circuits
+  and 250,000 execution-variant rows because each base circuit has raw and transpiled
+  variants.
+
+The current reliability-regression direction uses `thesis_production_125k_v1`. The Kaggle
+dataset remains background and historical baseline material, but it is not the official
+current reliability benchmark dataset.
 
 ## Reliability Definition
 
-For the current public dataset, reliability is defined as:
+For the earlier Kaggle-derived baseline, reliability was constructed as:
 
 `reliability = 1 - (bit_errors / qubit_count)`
 
@@ -26,6 +41,10 @@ Interpretation:
 - `0.0` means every qubit position disagrees
 
 The pipeline validates that the constructed target remains inside `[0, 1]`.
+
+For the generated `thesis_production_125k_v1` release, `reliability` is shipped directly as
+one of the target columns in the packaged dataset. The same modeling rule applies: target
+and post-run outcome columns are not used as input features.
 
 ## Leakage Policy
 

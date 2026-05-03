@@ -1,0 +1,549 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>dataprocessing</title>
+<style>body{font-family:Arial,sans-serif;max-width:980px;margin:32px auto;line-height:1.5;color:#1f2933}pre{background:#f6f8fa;padding:12px;overflow:auto;border-radius:6px}.code{border-left:4px solid #d0d7de;padding-left:12px}table{border-collapse:collapse}td,th{border:1px solid #d0d7de;padding:4px 8px}</style>
+</head><body>
+<h1>HW2 Data Processing</h1>
+<p>This notebook prepares the Homework 2 dataset for the current thesis task: predicting NISQ circuit reliability from pre-run circuit and hardware features. The goal is not to maximize model score here; it is to document the target, leakage boundary, grouped split logic, preprocessing policy, and saved train/validation/test datasets.</p>
+<div class="code"><pre><code>import importlib.util
+import subprocess
+import sys
+
+_REQUIRED_IMPORTS = [
+    (&#x27;pandas&#x27;, &#x27;pandas&#x27;),
+    (&#x27;pyarrow&#x27;, &#x27;pyarrow&#x27;),
+    (&#x27;sklearn&#x27;, &#x27;scikit-learn&#x27;),
+]
+
+_missing_pip_packages = []
+for import_name, pip_name in _REQUIRED_IMPORTS:
+    if importlib.util.find_spec(import_name) is None:
+        _missing_pip_packages.append(pip_name)
+
+if _missing_pip_packages:
+    _cmd = [sys.executable, &#x27;-m&#x27;, &#x27;pip&#x27;, &#x27;install&#x27;, *_missing_pip_packages]
+    print(&#x27;Installing missing notebook dependencies with:&#x27;)
+    print(&#x27; &#x27;.join(_cmd))
+    subprocess.check_call(_cmd)
+else:
+    print(&#x27;Notebook dependencies are available.&#x27;)
+</code></pre></div>
+<pre>Notebook dependencies are available.
+</pre>
+<h2>1. Task Framing From HW1</h2>
+<p>Research problem: estimate how reliable a noisy simulated quantum circuit execution will be before using the observed output counts.</p>
+<p>Analytical task: supervised regression.</p>
+<p>Observation unit: one simulated circuit execution variant, either raw or transpiled.</p>
+<p>Target variable: `reliability`, a bounded continuous value in `[0, 1]`.</p>
+<p>Main metric for later benchmark comparison: validation MAE, supported by RMSE and R2.</p>
+<div class="code"><pre><code>from pathlib import Path
+import json
+
+import pandas as pd
+
+FULL_SPLIT_DIR = Path(&#x27;data/raw/thesis_production_125k/release/splits&#x27;)
+HW2_DATA_DIR = Path(&#x27;data/hw2&#x27;)
+
+feature_policy = json.loads((HW2_DATA_DIR / &#x27;feature_policy.json&#x27;).read_text(encoding=&#x27;utf-8&#x27;))
+split_summary = json.loads((HW2_DATA_DIR / &#x27;split_summary.json&#x27;).read_text(encoding=&#x27;utf-8&#x27;))
+feature_manifest = json.loads((FULL_SPLIT_DIR / &#x27;feature_manifest.json&#x27;).read_text(encoding=&#x27;utf-8&#x27;))
+
+train = pd.read_parquet(HW2_DATA_DIR / &#x27;train.parquet&#x27;)
+validation = pd.read_parquet(HW2_DATA_DIR / &#x27;validation.parquet&#x27;)
+test = pd.read_parquet(HW2_DATA_DIR / &#x27;test.parquet&#x27;)
+
+print(&#x27;Saved HW2 split shapes:&#x27;)
+for name, frame in [(&#x27;train&#x27;, train), (&#x27;validation&#x27;, validation), (&#x27;test&#x27;, test)]:
+    print(f&#x27;{name}: {frame.shape[0]:,} rows x {frame.shape[1]:,} columns; groups={frame[&quot;base_circuit_id&quot;].nunique():,}&#x27;)
+</code></pre></div>
+<pre>Saved HW2 split shapes:
+train: 20,000 rows x 75 columns; groups=10,000
+validation: 2,500 rows x 75 columns; groups=1,250
+test: 2,500 rows x 75 columns; groups=1,250
+</pre>
+<h2>2. Data Description</h2>
+<p>This repository contains two datasets with different roles:</p>
+<ul>
+<li>Kaggle NISQ Fault Logs 100K: the earlier public dataset used for initial cleaning, feature engineering, and historical fault-type classification baselines with target `error_type`.</li>
+<li>Generated thesis dataset `thesis_production_125k_v1`: the current dataset produced by the separate dataset-generator workflow. It has 125,000 base circuits and 250,000 execution-variant rows because each base circuit has raw and transpiled variants.</li>
+</ul>
+<p>HW2 uses the generated `thesis_production_125k_v1` dataset for reliability regression. The full local release contains an official grouped train/validation/test split. For GitHub submission, `data/hw2/` stores a reproducible grouped sample from that official split, because the full release files are too large to keep comfortably in the repository.</p>
+<div class="code"><pre><code>display(pd.DataFrame({
+    &#x27;split&#x27;: [&#x27;train&#x27;, &#x27;validation&#x27;, &#x27;test&#x27;],
+    &#x27;saved_rows&#x27;: [len(train), len(validation), len(test)],
+    &#x27;saved_groups&#x27;: [train[&#x27;base_circuit_id&#x27;].nunique(), validation[&#x27;base_circuit_id&#x27;].nunique(), test[&#x27;base_circuit_id&#x27;].nunique()],
+    &#x27;reliability_mean&#x27;: [train[&#x27;reliability&#x27;].mean(), validation[&#x27;reliability&#x27;].mean(), test[&#x27;reliability&#x27;].mean()],
+    &#x27;reliability_min&#x27;: [train[&#x27;reliability&#x27;].min(), validation[&#x27;reliability&#x27;].min(), test[&#x27;reliability&#x27;].min()],
+    &#x27;reliability_max&#x27;: [train[&#x27;reliability&#x27;].max(), validation[&#x27;reliability&#x27;].max(), test[&#x27;reliability&#x27;].max()],
+}))
+
+summary = pd.DataFrame({
+    &#x27;dtype&#x27;: train.dtypes.astype(str),
+    &#x27;train_missing&#x27;: train.isna().sum(),
+    &#x27;train_unique_values&#x27;: train.nunique(dropna=False),
+})
+summary.head(25)
+</code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>split</th>
+      <th>saved_rows</th>
+      <th>saved_groups</th>
+      <th>reliability_mean</th>
+      <th>reliability_min</th>
+      <th>reliability_max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>train</td>
+      <td>20000</td>
+      <td>10000</td>
+      <td>0.789930</td>
+      <td>0.000977</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>validation</td>
+      <td>2500</td>
+      <td>1250</td>
+      <td>0.791551</td>
+      <td>0.010742</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>test</td>
+      <td>2500</td>
+      <td>1250</td>
+      <td>0.785319</td>
+      <td>0.016602</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>dtype</th>
+      <th>train_missing</th>
+      <th>train_unique_values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>dataset_id</th>
+      <td>object</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>profile_name</th>
+      <td>object</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>base_circuit_id</th>
+      <td>object</td>
+      <td>0</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>circuit_id</th>
+      <td>object</td>
+      <td>0</td>
+      <td>20000</td>
+    </tr>
+    <tr>
+      <th>family</th>
+      <td>object</td>
+      <td>0</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>execution_mode</th>
+      <td>object</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>seed</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>compiler_variant</th>
+      <td>object</td>
+      <td>0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>hardware_id</th>
+      <td>object</td>
+      <td>0</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>hardware_snapshot_id</th>
+      <td>object</td>
+      <td>0</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>hardware_sample_id</th>
+      <td>object</td>
+      <td>0</td>
+      <td>285</td>
+    </tr>
+    <tr>
+      <th>qubit_count</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>original_circuit_depth</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>43</td>
+    </tr>
+    <tr>
+      <th>original_num_cx</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>22</td>
+    </tr>
+    <tr>
+      <th>original_num_cz</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>35</td>
+    </tr>
+    <tr>
+      <th>original_num_single_qubit_gates</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>67</td>
+    </tr>
+    <tr>
+      <th>original_entanglement_density</th>
+      <td>float64</td>
+      <td>0</td>
+      <td>161</td>
+    </tr>
+    <tr>
+      <th>original_unique_two_qubit_edge_count</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>original_interaction_graph_density</th>
+      <td>float64</td>
+      <td>0</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>original_mean_qubit_gate_count</th>
+      <td>float64</td>
+      <td>0</td>
+      <td>195</td>
+    </tr>
+    <tr>
+      <th>original_max_qubit_gate_count</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <th>original_mean_qubit_two_qubit_gate_count</th>
+      <td>float64</td>
+      <td>0</td>
+      <td>65</td>
+    </tr>
+    <tr>
+      <th>original_max_qubit_two_qubit_gate_count</th>
+      <td>int64</td>
+      <td>0</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>original_active_qubit_fraction</th>
+      <td>float64</td>
+      <td>0</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>original_mean_interaction_degree</th>
+      <td>float64</td>
+      <td>0</td>
+      <td>15</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>3. Missing Values And Duplicates</h2>
+<p>Some local hardware-mapping features are missing for raw circuit variants, because raw circuits do not have physical qubit mappings. These values are not filled globally in this notebook. The benchmark notebook handles missing values inside a train-only sklearn preprocessing pipeline.</p>
+<p>The important duplicate-like structure is `base_circuit_id`: raw and transpiled variants can belong to the same base circuit. That is why the split must be grouped.</p>
+<div class="code"><pre><code>for name, frame in [(&#x27;train&#x27;, train), (&#x27;validation&#x27;, validation), (&#x27;test&#x27;, test)]:
+    duplicate_circuit_ids = int(frame.duplicated(subset=[&#x27;circuit_id&#x27;]).sum())
+    duplicate_base_ids = int(frame.duplicated(subset=[&#x27;base_circuit_id&#x27;]).sum())
+    print(f&#x27;{name}: duplicate circuit_id rows={duplicate_circuit_ids:,}; repeated base_circuit_id rows={duplicate_base_ids:,}&#x27;)
+
+high_missing = summary[summary[&#x27;train_missing&#x27;] &gt; 0].sort_values(&#x27;train_missing&#x27;, ascending=False)
+high_missing[[&#x27;dtype&#x27;, &#x27;train_missing&#x27;]].head(15)
+</code></pre></div>
+<pre>train: duplicate circuit_id rows=0; repeated base_circuit_id rows=10,000
+validation: duplicate circuit_id rows=0; repeated base_circuit_id rows=1,250
+test: duplicate circuit_id rows=0; repeated base_circuit_id rows=1,250
+</pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>dtype</th>
+      <th>train_missing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>noise_regime</th>
+      <td>object</td>
+      <td>20000</td>
+    </tr>
+    <tr>
+      <th>noise_dominant_channel</th>
+      <td>object</td>
+      <td>20000</td>
+    </tr>
+    <tr>
+      <th>mitigated_reliability</th>
+      <td>object</td>
+      <td>20000</td>
+    </tr>
+    <tr>
+      <th>mitigation_gain</th>
+      <td>object</td>
+      <td>20000</td>
+    </tr>
+    <tr>
+      <th>exact_match_probability</th>
+      <td>object</td>
+      <td>20000</td>
+    </tr>
+    <tr>
+      <th>local_readout_error_mean</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>local_two_qubit_error_max</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>local_two_qubit_error_mean</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>local_t2_mean</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>local_t1_mean</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>local_readout_error_max</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>transpiled_basis_json</th>
+      <td>object</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>coupling_path_length</th>
+      <td>float64</td>
+      <td>10000</td>
+    </tr>
+    <tr>
+      <th>physical_qubit_indices_json</th>
+      <td>object</td>
+      <td>10000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>4. Leakage Audit</h2>
+<p>The prediction context is pre-run reliability estimation. The target is derived from noisy simulation outputs, but those post-run outputs must not be model inputs. The allowed inputs are circuit structure, compiler/hardware metadata, and calibration-like noise features available before execution.</p>
+<div class="code"><pre><code>print(&#x27;Target:&#x27;, feature_policy[&#x27;target_column&#x27;])
+print(&#x27;Prediction context:&#x27;, feature_policy[&#x27;prediction_context&#x27;])
+print()
+print(&#x27;Excluded leakage columns:&#x27;)
+for column, reason in feature_policy[&#x27;excluded_leakage_columns&#x27;].items():
+    print(f&#x27;- {column}: {reason}&#x27;)
+print()
+print(&#x27;Allowed input feature count:&#x27;, len(feature_policy[&#x27;allowed_feature_columns&#x27;]))
+</code></pre></div>
+<pre>Target: reliability
+Prediction context: pre_run_reliability_regression
+
+Excluded leakage columns:
+- fidelity: alternative post-run target/outcome quality, not an input for reliability prediction
+- error_rate: post-run target-like outcome column
+- algorithmic_success_probability: post-run outcome metric
+- exact_output_success_rate: post-run outcome metric
+- counts_json: measured output counts from execution
+- ideal_distribution_json: output distribution payload, not part of the pre-run scalar feature set
+- exact_match_probability: post-run or mitigation-derived outcome field
+- mitigated_reliability: post-run mitigation-derived outcome field
+- mitigation_gain: post-run mitigation-derived outcome field
+- noise_regime: post-generation label/diagnostic, not needed for pre-run benchmark inputs
+- noise_dominant_channel: post-generation label/diagnostic, not needed for pre-run benchmark inputs
+
+Allowed input feature count: 46
+</pre>
+<h2>5. Split Design</h2>
+<p>Rows are grouped by `base_circuit_id` so raw/transpiled versions of the same underlying circuit cannot cross train, validation, and test. This matches the real prediction scenario: performance should be estimated on circuits whose base construction was not seen during fitting.</p>
+<p>The test set is saved now but not used for HW2 model comparison.</p>
+<div class="code"><pre><code>train_groups = set(train[&#x27;base_circuit_id&#x27;])
+validation_groups = set(validation[&#x27;base_circuit_id&#x27;])
+test_groups = set(test[&#x27;base_circuit_id&#x27;])
+checks = {
+    &#x27;train_validation_overlap&#x27;: len(train_groups &amp; validation_groups),
+    &#x27;train_test_overlap&#x27;: len(train_groups &amp; test_groups),
+    &#x27;validation_test_overlap&#x27;: len(validation_groups &amp; test_groups),
+}
+print(checks)
+assert all(value == 0 for value in checks.values())
+
+print(json.dumps(split_summary, indent=2)[:2500])
+</code></pre></div>
+<pre>{&#x27;train_validation_overlap&#x27;: 0, &#x27;train_test_overlap&#x27;: 0, &#x27;validation_test_overlap&#x27;: 0}
+{
+  &quot;dataset_id&quot;: &quot;thesis_production_125k_v1&quot;,
+  &quot;target_column&quot;: &quot;reliability&quot;,
+  &quot;target_range&quot;: &quot;[0, 1]&quot;,
+  &quot;task_type&quot;: &quot;regression&quot;,
+  &quot;group_column&quot;: &quot;base_circuit_id&quot;,
+  &quot;split_policy&quot;: &quot;precomputed grouped split; base_circuit_id does not cross train/validation/test&quot;,
+  &quot;full_split_row_counts&quot;: {
+    &quot;train&quot;: 200000,
+    &quot;validation&quot;: 25000,
+    &quot;test&quot;: 25000
+  },
+  &quot;hw2_saved_sample_row_counts&quot;: {
+    &quot;train&quot;: 20000,
+    &quot;validation&quot;: 2500,
+    &quot;test&quot;: 2500
+  },
+  &quot;hw2_saved_sample_group_counts&quot;: {
+    &quot;train&quot;: 10000,
+    &quot;validation&quot;: 1250,
+    &quot;test&quot;: 1250
+  },
+  &quot;test_set_policy&quot;: &quot;saved now, held out from HW2 benchmark/model selection&quot;,
+  &quot;random_state_for_hw2_sampling&quot;: 42,
+  &quot;train_reliability_summary&quot;: {
+    &quot;mean&quot;: 0.7899298828125,
+    &quot;median&quot;: 0.845703125,
+    &quot;min&quot;: 0.0009765625,
+    &quot;max&quot;: 1.0
+  },
+  &quot;validation_reliability_summary&quot;: {
+    &quot;mean&quot;: 0.79155078125,
+    &quot;median&quot;: 0.84814453125,
+    &quot;min&quot;: 0.0107421875,
+    &quot;max&quot;: 1.0
+  },
+  &quot;test_reliability_summary&quot;: {
+    &quot;mean&quot;: 0.785319140625,
+    &quot;median&quot;: 0.837890625,
+    &quot;min&quot;: 0.0166015625,
+    &quot;max&quot;: 1.0
+  },
+  &quot;group_overlap_checks&quot;: {
+    &quot;train_validation_overlap&quot;: 0,
+    &quot;train_test_overlap&quot;: 0,
+    &quot;validation_test_overlap&quot;: 0
+  }
+}
+</pre>
+<h2>6. Saved Dataset Export</h2>
+<p>The HW2 datasets are already saved under `data/hw2/`. This cell rewrites them from the currently loaded frames so the notebook is executable from top to bottom and leaves the expected artifacts in place.</p>
+<div class="code"><pre><code>HW2_DATA_DIR.mkdir(parents=True, exist_ok=True)
+train.to_parquet(HW2_DATA_DIR / &#x27;train.parquet&#x27;, index=False)
+validation.to_parquet(HW2_DATA_DIR / &#x27;validation.parquet&#x27;, index=False)
+test.to_parquet(HW2_DATA_DIR / &#x27;test.parquet&#x27;, index=False)
+(HW2_DATA_DIR / &#x27;feature_policy.json&#x27;).write_text(json.dumps(feature_policy, indent=2), encoding=&#x27;utf-8&#x27;)
+(HW2_DATA_DIR / &#x27;split_summary.json&#x27;).write_text(json.dumps(split_summary, indent=2), encoding=&#x27;utf-8&#x27;)
+
+for path in sorted(HW2_DATA_DIR.glob(&#x27;*&#x27;)):
+    if path.is_file():
+        print(f&#x27;{path}: {path.stat().st_size:,} bytes&#x27;)
+</code></pre></div>
+<pre>data\hw2\feature_policy.json: 2,976 bytes
+data\hw2\README.md: 1,553 bytes
+data\hw2\split_summary.json: 1,278 bytes
+data\hw2\test.parquet: 1,025,382 bytes
+data\hw2\train.parquet: 7,681,724 bytes
+data\hw2\validation.parquet: 987,852 bytes
+</pre>
+<h2>7. Preprocessing Policy</h2>
+<p>Preprocessing that learns from data is intentionally deferred to `benchmark.ipynb`, where it is implemented as an sklearn pipeline fitted only on the training split. This avoids fitting imputers, encoders, or scalers on validation/test rows.</p>
+<p>Methodological lesson: for this project, the critical HW2 decision is grouped splitting by `base_circuit_id` plus a clear pre-run feature boundary for reliability prediction.</p>
+</body></html>
