@@ -40,11 +40,13 @@ What happens here:
 - bitstrings are validated and aligned to `qubit_count`
 - invalid rows are flagged and optionally dropped
 
-Important assumption:
+Important note:
 
 - shorter bitstrings are currently left-padded with zeros to `qubit_count`
 
-TODO: Verify this assumption against the dataset description or source notebook.
+This rule belongs to the historical Kaggle fault-log baseline. The current HW2 reliability
+benchmark uses the generated `thesis_production_125k_v1` split in `data/hw2/` and does
+not use bitstrings as model inputs.
 
 ## Stage 3: Processed Feature Tables
 

@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from pydantic import ValidationError
 
 from src.config.schema import NISQReliabilityConfig, ProjectConfig
 from src.data.nisq_dataset import (
@@ -29,7 +30,6 @@ from src.data.nisq_dataset import (
     check_split_integrity,
     load_nisq_splits,
 )
-
 
 # ── shared test fixtures ──────────────────────────────────────────────────────
 
@@ -175,12 +175,8 @@ def _write_dataset(
     train_df.to_parquet(tmp_path / "train.parquet", index=False)
     val_df.to_parquet(tmp_path / "validation.parquet", index=False)
     test_df.to_parquet(tmp_path / "test.parquet", index=False)
-    (tmp_path / "feature_manifest.json").write_text(
-        json.dumps(feature_manifest), encoding="utf-8"
-    )
-    (tmp_path / "split_manifest.json").write_text(
-        json.dumps(split_manifest), encoding="utf-8"
-    )
+    (tmp_path / "feature_manifest.json").write_text(json.dumps(feature_manifest), encoding="utf-8")
+    (tmp_path / "split_manifest.json").write_text(json.dumps(split_manifest), encoding="utf-8")
     return tmp_path
 
 
@@ -250,7 +246,7 @@ def test_nisq_reliability_config_default_target_column() -> None:
 
 
 def test_nisq_reliability_config_rejects_bad_target_column() -> None:
-    with pytest.raises(Exception):  # pydantic ValidationError
+    with pytest.raises(ValidationError):
         NISQReliabilityConfig(target_column="not_valid")
 
 
@@ -322,9 +318,7 @@ def test_resolve_feature_columns_raises_when_no_recognised_key() -> None:
 
 
 def test_build_feature_matrix_selects_only_feature_columns() -> None:
-    frame = pd.DataFrame(
-        {"feat_a": [1.0], "feat_b": [2.0], "reliability": [0.8], "meta": ["x"]}
-    )
+    frame = pd.DataFrame({"feat_a": [1.0], "feat_b": [2.0], "reliability": [0.8], "meta": ["x"]})
     X = build_feature_matrix(
         frame,
         feature_columns=["feat_a", "feat_b"],
@@ -364,9 +358,7 @@ def test_build_feature_matrix_skips_encoding_when_no_categoricals_present() -> N
 
 def test_build_feature_matrix_skips_absent_feature_columns_gracefully() -> None:
     frame = pd.DataFrame({"feat_a": [1.0]})
-    X = build_feature_matrix(
-        frame, feature_columns=["feat_a", "missing_col"], target_columns=[]
-    )
+    X = build_feature_matrix(frame, feature_columns=["feat_a", "missing_col"], target_columns=[])
     assert list(X.columns) == ["feat_a"]
 
 
@@ -518,9 +510,7 @@ def test_load_nisq_splits_raises_when_group_column_absent(
         (val_df, "validation"),
         (test_df, "test"),
     ]:
-        df.drop(columns=["base_circuit_id"]).to_parquet(
-            tmp_path / f"{name}.parquet", index=False
-        )
+        df.drop(columns=["base_circuit_id"]).to_parquet(tmp_path / f"{name}.parquet", index=False)
     (tmp_path / "feature_manifest.json").write_text(
         json.dumps({"input_features": FEATURE_COLS, "target_columns": TARGET_COLS})
     )
@@ -558,9 +548,7 @@ def test_check_split_integrity_detects_group_leakage(
 
     bad_splits = NISQDatasetSplits(
         train=splits.train,
-        validation=SplitData(
-            X=splits.validation.X, y=splits.validation.y, meta=contaminated_meta
-        ),
+        validation=SplitData(X=splits.validation.X, y=splits.validation.y, meta=contaminated_meta),
         test=splits.test,
         feature_columns=splits.feature_columns,
         target_columns=splits.target_columns,

@@ -414,14 +414,10 @@ def _build_tuning_comparison(
     tuned_validation = _maybe_float(best_row.get("best_validation_macro_f1"))
     tuned_test = _maybe_float(best_row.get("test_macro_f1"))
     untuned_validation = (
-        _maybe_float(untuned_row.get("validation_macro_f1"))
-        if untuned_row is not None
-        else None
+        _maybe_float(untuned_row.get("validation_macro_f1")) if untuned_row is not None else None
     )
     untuned_test = (
-        _maybe_float(untuned_row.get("test_macro_f1"))
-        if untuned_row is not None
-        else None
+        _maybe_float(untuned_row.get("test_macro_f1")) if untuned_row is not None else None
     )
     validation_delta = (
         None
@@ -777,8 +773,7 @@ def _render_what_was_compared(report: MilestoneReport) -> str:
     ]
     if report.what_was_compared.prediction_contexts:
         lines.append(
-            "- Prediction contexts: "
-            + ", ".join(report.what_was_compared.prediction_contexts)
+            "- Prediction contexts: " + ", ".join(report.what_was_compared.prediction_contexts)
         )
     if report.what_was_compared.excluded_feature_columns:
         lines.append(
@@ -907,8 +902,7 @@ def _render_takeaway_section(report: MilestoneReport) -> str:
         lines.append("")
         lines.append("Negative results to preserve")
         lines.extend(
-            f"- {value}"
-            for value in report.main_scientific_takeaway.negative_results_to_preserve
+            f"- {value}" for value in report.main_scientific_takeaway.negative_results_to_preserve
         )
     return "\n".join(lines)
 
@@ -924,9 +918,7 @@ def _render_thesis_framing(report: MilestoneReport) -> str:
     )
     if comparator_line:
         lines.append(comparator_line)
-    lines.extend(
-        f"- {note}" for note in report.thesis_framing_recommendation.presentation_notes
-    )
+    lines.extend(f"- {note}" for note in report.thesis_framing_recommendation.presentation_notes)
     return "\n".join(lines)
 
 

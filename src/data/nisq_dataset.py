@@ -227,8 +227,7 @@ def _resolve_feature_columns(feature_manifest: dict, frame: pd.DataFrame) -> lis
     missing = [c for c in candidates if c not in frame.columns]
     if missing:
         log.info(
-            "%d feature columns listed in manifest are absent from the frame "
-            "(skipped): %s",
+            "%d feature columns listed in manifest are absent from the frame " "(skipped): %s",
             len(missing),
             missing,
         )
@@ -244,15 +243,11 @@ def _resolve_feature_columns(feature_manifest: dict, frame: pd.DataFrame) -> lis
 
 def _resolve_target_columns(feature_manifest: dict, frame: pd.DataFrame) -> list[str]:
     """Return target columns from the manifest, filtered to those in ``frame``."""
-    manifest_targets: list[str] = feature_manifest.get(
-        "target_columns", list(ALL_TARGET_COLUMNS)
-    )
+    manifest_targets: list[str] = feature_manifest.get("target_columns", list(ALL_TARGET_COLUMNS))
     present = [c for c in manifest_targets if c in frame.columns]
     missing = [c for c in manifest_targets if c not in frame.columns]
     if missing:
-        log.info(
-            "Manifest target columns absent from frame (skipped): %s", missing
-        )
+        log.info("Manifest target columns absent from frame (skipped): %s", missing)
     return present
 
 
@@ -264,9 +259,7 @@ def _read_split_parquet(dataset_dir: Path, split_name: str) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"Split file not found: {path}")
     df = pd.read_parquet(path)
-    log.info(
-        "Read %s split: %d rows, %d columns.", split_name, len(df), df.shape[1]
-    )
+    log.info("Read %s split: %d rows, %d columns.", split_name, len(df), df.shape[1])
     return df
 
 
@@ -368,9 +361,7 @@ def check_split_integrity(
     log.info("All split integrity checks passed.")
 
 
-def _check_no_group_leakage(
-    splits: NISQDatasetSplits, *, group_column: str
-) -> None:
+def _check_no_group_leakage(splits: NISQDatasetSplits, *, group_column: str) -> None:
     """Assert that no group key appears in more than one split."""
     split_groups: dict[str, set] = {}
 
@@ -400,9 +391,7 @@ def _check_no_group_leakage(
             "at the row level rather than the group level."
         )
 
-    log.info(
-        "Group leakage check passed — no %r overlap across splits.", group_column
-    )
+    log.info("Group leakage check passed — no %r overlap across splits.", group_column)
 
 
 def _check_target_ranges(splits: NISQDatasetSplits) -> None:
@@ -433,8 +422,7 @@ def _check_target_ranges(splits: NISQDatasetSplits) -> None:
                     )
                     continue
                 raise AssertionError(
-                    f"Required target {col!r} is entirely null in the "
-                    f"{split_name!r} split."
+                    f"Required target {col!r} is entirely null in the " f"{split_name!r} split."
                 )
 
             out_of_range = non_null[(non_null < 0) | (non_null > 1)]
@@ -461,9 +449,7 @@ def _check_reliability_variance(splits: NISQDatasetSplits) -> None:
 
 def _check_no_all_null_features(splits: NISQDatasetSplits) -> None:
     """Assert that no input-feature column is entirely null in the train split."""
-    all_null = [
-        col for col in splits.train.X.columns if splits.train.X[col].isna().all()
-    ]
+    all_null = [col for col in splits.train.X.columns if splits.train.X[col].isna().all()]
     assert not all_null, (
         f"The following feature columns are entirely null in the training split: "
         f"{all_null}.  Remove them from the feature manifest or investigate "
@@ -505,18 +491,14 @@ def _build_split_data(
 
     # Metadata: everything that is not a feature and not a target.
     non_feature_non_target = [
-        c
-        for c in frame.columns
-        if c not in feature_columns and c not in target_columns
+        c for c in frame.columns if c not in feature_columns and c not in target_columns
     ]
     meta = frame[non_feature_non_target].copy()
 
     y = frame[target_column].copy()
     y.name = target_column
 
-    X = build_feature_matrix(
-        frame, feature_columns, target_columns, encode_categoricals=True
-    )
+    X = build_feature_matrix(frame, feature_columns, target_columns, encode_categoricals=True)
 
     return SplitData(X=X, y=y, meta=meta)
 

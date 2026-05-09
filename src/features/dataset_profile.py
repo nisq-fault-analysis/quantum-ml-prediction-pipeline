@@ -21,10 +21,7 @@ def _series_distribution(values: pd.Series) -> dict[str, int]:
 
 def _top_sequences(normalized_sequences: pd.Series, limit: int = 10) -> list[dict[str, Any]]:
     counts = normalized_sequences.value_counts(dropna=False).head(limit)
-    return [
-        {"sequence": str(sequence), "count": int(count)}
-        for sequence, count in counts.items()
-    ]
+    return [{"sequence": str(sequence), "count": int(count)} for sequence, count in counts.items()]
 
 
 def _gate_count_summary(token_lists: pd.Series) -> dict[str, float | int]:
@@ -77,9 +74,7 @@ def build_dataset_profile(
             "sequence_column": sequence_column,
             "non_empty_sequence_rows": int(token_lists.apply(bool).sum()),
             "unique_normalized_sequence_count": int(normalized_sequences.nunique(dropna=False)),
-            "constant_normalized_sequence": bool(
-                normalized_sequences.nunique(dropna=False) <= 1
-            ),
+            "constant_normalized_sequence": bool(normalized_sequences.nunique(dropna=False) <= 1),
             "top_normalized_sequences": _top_sequences(normalized_sequences),
             "gate_count_per_circuit": _gate_count_summary(token_lists),
             "unique_gate_type_count": int(len(gate_type_counts)),

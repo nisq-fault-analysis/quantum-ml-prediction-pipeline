@@ -295,8 +295,7 @@ class NISQReliabilityConfig(BaseModel):
     def _validate_target_column(cls, value: str) -> str:
         if value not in _NISQ_TARGET_COLUMNS:
             raise ValueError(
-                f"target_column must be one of {list(_NISQ_TARGET_COLUMNS)}, "
-                f"got {value!r}"
+                f"target_column must be one of {list(_NISQ_TARGET_COLUMNS)}, " f"got {value!r}"
             )
         return value
 

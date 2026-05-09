@@ -193,9 +193,6 @@ kernel.
 `-- tests/                   # Automated tests
 ```
 
-## Notes For Review
-
-- `checklist.md` is a local working note and is ignored by Git.
-- The root notebooks and HTML exports are the primary HW2 review artifacts.
+## Notes
 - The Kaggle dataset and generated thesis dataset are both described, but HW2 uses the
   generated `thesis_production_125k_v1` reliability dataset.

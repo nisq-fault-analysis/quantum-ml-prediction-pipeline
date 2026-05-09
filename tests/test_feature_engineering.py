@@ -201,6 +201,5 @@ def test_build_dataset_profile_reports_gate_diversity_and_zero_variance_warnings
     assert dataset_profile["gate_sequence_profile"]["unique_gate_type_count"] == 6
     assert dataset_profile["gate_sequence_profile"]["gate_type_frequencies"]["cx"] == 2
     assert (
-        "shots"
-        in dataset_profile["feature_set_warnings"]["baseline_raw"]["zero_variance_columns"]
+        "shots" in dataset_profile["feature_set_warnings"]["baseline_raw"]["zero_variance_columns"]
     )
