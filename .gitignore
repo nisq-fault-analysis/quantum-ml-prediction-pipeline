@@ -21,6 +21,12 @@ checklist.md
 # Jupyter
 .ipynb_checkpoints/
 
+# Image colorization notebook data and generated artifacts
+WS/image-colorization/
+WS/image-colorization.*
+WS/image-colorization-cnn-notebook/outputs/
+.tmp_kaggle_pull/
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
