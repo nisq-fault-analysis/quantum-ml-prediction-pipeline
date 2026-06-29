@@ -7830,7 +7830,7 @@ a.anchor-link {
 <tbody>
 <tr>
 <td>Původní obvod (<code>original_*</code>)</td>
-<td>16</td>
+<td>17</td>
 <td>Topologie obvodu před transpilací</td>
 </tr>
 <tr>
@@ -7840,7 +7840,7 @@ a.anchor-link {
 </tr>
 <tr>
 <td>Hardwarový šum / kalibrace</td>
-<td>13</td>
+<td>12</td>
 <td>Chybovosti hradel, dekoherenční časy, readout error</td>
 </tr>
 </tbody>
@@ -7965,11 +7965,11 @@ Celkem pokryto: 46 / 46
 </li>
 </ol>
 <pre><code>Vstup (46 příznaků)
-  ├── Větev 1: original_* (17) → Conv1d blocks → pool → 64-dim
-  ├── Větev 2: transpiled  (17) → Conv1d blocks → pool → 64-dim
-  └── Větev 3: hardware    (12) → Conv1d blocks → pool → 64-dim
+  ├── Větev 1: original_* (17) → Conv1d blocks → pool → 128-dim
+  ├── Větev 2: transpiled  (17) → Conv1d blocks → pool → 128-dim
+  └── Větev 3: hardware    (12) → Conv1d blocks → pool → 128-dim
        │
-       └── Concat (192-dim) → FC(128) → BN → ReLU → Dropout
+       └── Concat (384-dim) → FC(128) → BN → ReLU → Dropout
                              → FC(64) → BN → ReLU → Dropout
                              → FC(1) → reliability
 </code></pre>
@@ -10134,7 +10134,7 @@ Nejlepší konfigurace: C: Velká síť (conv=64, fc=256)
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="5.3-Pr%C5%AFb%C4%9Bh-tr%C3%A9nov%C3%A1n%C3%AD">5.3 Průběh trénování<a class="anchor-link" href="#5.3-Pr%C5%AFb%C4%9Bh-tr%C3%A9nov%C3%A1n%C3%AD">¶</a></h3>
+<h3 id="5.4-Pr%C5%AFb%C4%9Bh-tr%C3%A9nov%C3%A1n%C3%AD">5.4 Průběh trénování<a class="anchor-link" href="#5.4-Pr%C5%AFb%C4%9Bh-tr%C3%A9nov%C3%A1n%C3%AD">¶</a></h3>
 </div>
 </div>
 </div>
